@@ -22,7 +22,7 @@ class IndicatorGenerationBaseClass(ProcessBaseClass):
             time.sleep(self.ExchangeConnectionObj.rateLimit / 1000)
             try:
                 CandlestickDataArr = self.ExchangeConnectionObj.fetch_ohlcv(
-                    Constant.CURRENCY_SYMBOL,
+                    self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX],
                     "1m",
                     since=SinceInt
                 )
@@ -32,7 +32,9 @@ class IndicatorGenerationBaseClass(ProcessBaseClass):
                 self.createExchangeInteractionLog(
                     self.ProcessName,
                     datetime.now(),
-                    "fetch_ohlcv(" + Constant.CURRENCY_SYMBOL + "," + "1m,since="
+                    "fetch_ohlcv("
+                    + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
+                    + "," + "1m,since="
                     + str(SinceInt) + ")",
                     "NetworkError: " + str(ErrorMessage)
                 )
@@ -40,7 +42,9 @@ class IndicatorGenerationBaseClass(ProcessBaseClass):
                 self.createExchangeInteractionLog(
                     self.ProcessName,
                     datetime.now(),
-                    "fetch_ohlcv(" + Constant.CURRENCY_SYMBOL + "," + "1m,since="
+                    "fetch_ohlcv("
+                    + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
+                    + "," + "1m,since="
                     + str(SinceInt) + ")",
                     "ExchangeError: " + str(ErrorMessage)
                 )
@@ -48,64 +52,13 @@ class IndicatorGenerationBaseClass(ProcessBaseClass):
                 self.createExchangeInteractionLog(
                     self.ProcessName,
                     datetime.now(),
-                    "fetch_ohlcv(" + Constant.CURRENCY_SYMBOL + "," + "1m,since="
+                    "fetch_ohlcv("
+                    + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
+                    + "," + "1m,since="
                     + str(SinceInt) + ")",
                     "OtherError: " + str(ErrorMessage)
                 )
 
         else:
             return False
-    # endregion
-
-    # region Functions used to long process successes and failures as system executes
-    def templateDatabaseLogger(self, QueryStr, QueryData, FunctionNameStr=" "):
-        try:
-            ConnectionObj = mysql.connector.connect(host=self.DatabaseConnectionDetails['ServerName'],
-                                                 database=self.DatabaseConnectionDetails['DatabaseName'],
-                                                 user=self.DatabaseConnectionDetails['UserName'],
-                                                 password=self.DatabaseConnectionDetails['Password'])
-
-            CursorObj = ConnectionObj.cursor()
-            CursorObj.execute(QueryStr, QueryData)
-            ConnectionObj.commit()
-
-            if ConnectionObj.is_connected():
-                CursorObj.close()
-                ConnectionObj.close()
-            else:
-                print("Failed to close MySQL connection")
-
-        except mysql.connector.Error as error:
-            print(self.ProcessName + " in " + FunctionNameStr + " failed to insert into MySQL table {}".format(error))
-            print(QueryStr)
-            print(QueryData)
-            print(datetime.now())
-
-    def createExchangeInteractionLog(self, ProcessNameStr, EntryDateTimeObj, ExchangeFunctionStr, MessageStr):
-        QueryStr = """INSERT INTO ExchangeInteractionFailureLog (ProcessName, EntryTime, ExchangeFunction, ErrorMessage)
-                                       VALUES
-                                       (%s, %s, %s, %s)"""
-
-        QueryData = (
-            ProcessNameStr,
-            EntryDateTimeObj,
-            ExchangeFunctionStr,
-            MessageStr
-        )
-        self.templateDatabaseLogger(QueryStr, QueryData, "createExchangeInteractionLog")
-
-    def createIndicatorUpdateLog(self, ProcessNameStr, EntryDateTimeObj, IndicatorNameStr, IndicatorDataObj, SuccessStr):
-        QueryStr = """INSERT INTO IndicatorGenerationLog (EntryTime, IndicatorData, Success, ProcessName, IndicatorName)
-                                       VALUES
-                                       (%s, %s, %s, %s, %s)"""
-
-        QueryData = (
-            EntryDateTimeObj,
-            str(IndicatorDataObj),
-            SuccessStr,
-            ProcessNameStr,
-            IndicatorNameStr
-        )
-        self.templateDatabaseLogger(QueryStr, QueryData, "createIndicatorUpdateLog")
-
     # endregion

@@ -24,29 +24,32 @@ class IndicatorGenerationClass(IndicatorGenerationBaseClass):
         self.IndicatorsObj['TimeStamp']['datetime'] = datetime.now()
 
     def updateCandleArr(self):
+        CandleDurationInt = \
+            int(self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_INDICATOR_CANDLE_DURATION_INDEX])
+
         OutstandingCandlestickArr = self.get1mCandles(
             self.CandleArr['FiveMinuteCandles'][len(self.CandleArr['FiveMinuteCandles']) - 1]['time_stamp'] + 1000)
         if len(OutstandingCandlestickArr) < 5:
             return
 
-        for iterator in range(0, len(OutstandingCandlestickArr), Constant.INDICATOR_CANDLE_DURATION):
-            if len(OutstandingCandlestickArr) < iterator + Constant.INDICATOR_CANDLE_DURATION:
+        for iterator in range(0, len(OutstandingCandlestickArr), CandleDurationInt):
+            if len(OutstandingCandlestickArr) < iterator + CandleDurationInt:
                 break
             self.CandleArr['FiveMinuteCandles'].append({
                 'mid': (OutstandingCandlestickArr[iterator][Constant.CANDLE_OPEN_PRICE_INDEX] +
-                        OutstandingCandlestickArr[iterator + Constant.INDICATOR_CANDLE_DURATION - 1][
+                        OutstandingCandlestickArr[iterator + CandleDurationInt - 1][
                             Constant.CANDLE_CLOSING_PRICE_INDEX]) / 2,
                 'open': OutstandingCandlestickArr[iterator][Constant.CANDLE_OPEN_PRICE_INDEX],
-                'close': OutstandingCandlestickArr[iterator + Constant.INDICATOR_CANDLE_DURATION - 1][
+                'close': OutstandingCandlestickArr[iterator + CandleDurationInt - 1][
                     Constant.CANDLE_CLOSING_PRICE_INDEX],
-                'time_stamp': OutstandingCandlestickArr[iterator + Constant.INDICATOR_CANDLE_DURATION - 1][
+                'time_stamp': OutstandingCandlestickArr[iterator + CandleDurationInt - 1][
                     Constant.CANDLE_TIMESTAMP_INDEX]
             })
 
             self.CandleArr['FiveMinuteCandles'].pop(0)
 
     def updateBollingerBandIndicator(self):
-        BollingerBandObj = ProjectFunctions.getBollingerBands(self.CandleArr['FiveMinuteCandles'])
+        BollingerBandObj = ProjectFunctions.getBollingerBands(self.CandleArr['FiveMinuteCandles'], self.AlgorithmConfigurationObj)
         if 'upper' in BollingerBandObj and 'lower' in BollingerBandObj and \
                 ProjectFunctions.checkIfNumber(BollingerBandObj['upper']) and \
                 ProjectFunctions.checkIfNumber(BollingerBandObj['lower']):
@@ -57,7 +60,7 @@ class IndicatorGenerationClass(IndicatorGenerationBaseClass):
             self.createIndicatorUpdateLog(self.ProcessName,  datetime.now(), 'Bollinger Band', {}, 'False')
 
     def updateRsiBandIndicator(self):
-        RsiBandObj = ProjectFunctions.getRsiBands(self.CandleArr['FiveMinuteCandles'])
+        RsiBandObj = ProjectFunctions.getRsiBands(self.CandleArr['FiveMinuteCandles'], self.AlgorithmConfigurationObj)
         if 'upper' in RsiBandObj and 'lower' in RsiBandObj and \
                 ProjectFunctions.checkIfNumber(RsiBandObj['upper']) and \
                 ProjectFunctions.checkIfNumber(RsiBandObj['lower']):

@@ -5,7 +5,6 @@ from FrameworkImplementations.TraderClass import TraderClass
 from assets import constants as Constant
 from assets import ProjectFunctions
 
-import time
 from datetime import datetime
 
 
@@ -33,6 +32,7 @@ class ManagerClass(ManagerBaseClass):
     def initializeProcessObjects(self):
         # print("Initializing Process Objects")
         IndicatorGenerationObj = IndicatorGenerationClass()
+        IndicatorGenerationObj.setAlgorithmConfigurationObj(self.AlgorithmConfigurationObj)
         IndicatorGenerationObj.setExchangeConnectionObj(self.ExchangeConnectionObj)
         IndicatorGenerationObj.setDatabaseConnectionDetailsObj(self.DatabaseConnectionDetails)
         IndicatorGenerationObj.setIndicators({
@@ -53,6 +53,7 @@ class ManagerClass(ManagerBaseClass):
 
         TraderObj = TraderClass()
         TraderObj.setExchangeConnectionObj(self.ExchangeConnectionObj)
+        TraderObj.setAlgorithmConfigurationObj(self.AlgorithmConfigurationObj)
         TraderObj.setExchangeConnectionDetailsObj(self.ExchangeConnectionDetails)
         TraderObj.setIndicators({
             'BB': self.BollingerBandObj,
@@ -72,16 +73,22 @@ class ManagerClass(ManagerBaseClass):
 
     def initializeSystemData(self):
         # region Indicator Initialization
-        CandlestickDataArr = self.get1mCandles(Constant.INDICATOR_CANDLE_DURATION*Constant.INDICATOR_FRAME_COUNT)
-        for iterator in range(0, len(CandlestickDataArr), Constant.INDICATOR_CANDLE_DURATION):
+        CandleDurationInt = \
+            int(self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_INDICATOR_CANDLE_DURATION_INDEX])
+        FrameCountInt = \
+            int(self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_INDICATOR_FRAME_COUNT_INDEX])
+
+        CandlestickDataArr = self.get1mCandles(CandleDurationInt * FrameCountInt)
+        for iterator in range(0, len(CandlestickDataArr), CandleDurationInt):
             self.FiveMinCandleArr.append({
                 'mid': (CandlestickDataArr[iterator][Constant.CANDLE_OPEN_PRICE_INDEX] +
-                        CandlestickDataArr[iterator + Constant.INDICATOR_CANDLE_DURATION-1][Constant.CANDLE_CLOSING_PRICE_INDEX])/2,
+                        CandlestickDataArr[iterator + CandleDurationInt-1][Constant.CANDLE_CLOSING_PRICE_INDEX])/2,
                 'open': CandlestickDataArr[iterator][Constant.CANDLE_OPEN_PRICE_INDEX],
-                'close': CandlestickDataArr[iterator + Constant.INDICATOR_CANDLE_DURATION-1][Constant.CANDLE_CLOSING_PRICE_INDEX],
-                'time_stamp': CandlestickDataArr[iterator + Constant.INDICATOR_CANDLE_DURATION-1][Constant.CANDLE_TIMESTAMP_INDEX]
+                'close': CandlestickDataArr[iterator + CandleDurationInt-1][Constant.CANDLE_CLOSING_PRICE_INDEX],
+                'time_stamp':
+                    CandlestickDataArr[iterator + CandleDurationInt-1][Constant.CANDLE_TIMESTAMP_INDEX]
             })
-        BollingerBandObj = ProjectFunctions.getBollingerBands(self.FiveMinCandleArr)
+        BollingerBandObj = ProjectFunctions.getBollingerBands(self.FiveMinCandleArr, self.AlgorithmConfigurationObj)
         if 'upper' in BollingerBandObj and 'lower' in BollingerBandObj and\
                 ProjectFunctions.checkIfNumber(BollingerBandObj['upper']) and\
                 ProjectFunctions.checkIfNumber(BollingerBandObj['lower']):
@@ -90,7 +97,7 @@ class ManagerClass(ManagerBaseClass):
         else:
             self.createIndicatorUpdateLog(self.ProcessName, datetime.now(), 'Bollinger Band', {}, 'False')
 
-        RsiBandObj = ProjectFunctions.getRsiBands(self.FiveMinCandleArr)
+        RsiBandObj = ProjectFunctions.getRsiBands(self.FiveMinCandleArr, self.AlgorithmConfigurationObj)
         if 'upper' in RsiBandObj and 'lower' in RsiBandObj and\
                 ProjectFunctions.checkIfNumber(RsiBandObj['upper']) and\
                 ProjectFunctions.checkIfNumber(RsiBandObj['lower']):

@@ -35,28 +35,33 @@ class TraderBaseClass(ProcessBaseClass):
 
     def countOpenOrders(self):
         try:
-            self.CurrentOrderArr = self.ExchangeConnectionObj.fetch_open_orders(Constant.CURRENCY_SYMBOL)
+            self.CurrentOrderArr = self.ExchangeConnectionObj.fetch_open_orders(
+                self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
+            )
             return len(self.CurrentOrderArr)
         except ccxt.NetworkError as ErrorMessage:
             self.createExchangeInteractionLog(
                 self.ProcessName,
                 datetime.now(),
-                "fetch_open_orders(" + Constant.CURRENCY_SYMBOL + ")",
-                "NetworkError: " + str(ErrorMessage)
+                "fetch_open_orders("
+                + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
+                + ")", "NetworkError: " + str(ErrorMessage)
             )
         except ccxt.ExchangeError as ErrorMessage:
             self.createExchangeInteractionLog(
                 self.ProcessName,
                 datetime.now(),
-                "fetch_open_orders(" + Constant.CURRENCY_SYMBOL + ")",
-                "ExchangeError: " + str(ErrorMessage)
+                "fetch_open_orders("
+                + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
+                + ")", "ExchangeError: " + str(ErrorMessage)
             )
         except Exception as ErrorMessage:
             self.createExchangeInteractionLog(
                 self.ProcessName,
                 datetime.now(),
-                "fetch_open_orders(" + Constant.CURRENCY_SYMBOL + ")",
-                "OtherError: " + str(ErrorMessage)
+                "fetch_open_orders("
+                + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
+                + ")", "OtherError: " + str(ErrorMessage)
             )
         return False
 
@@ -147,7 +152,7 @@ class TraderBaseClass(ProcessBaseClass):
                 })
             else:
                 self.ExchangeConnectionObj.create_order(
-                    Constant.CURRENCY_SYMBOL,
+                    self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX],
                     'limit',
                     OrderSideStr,
                     OrderQuantityInt,
@@ -166,8 +171,9 @@ class TraderBaseClass(ProcessBaseClass):
             self.createExchangeInteractionLog(
                 self.ProcessName,
                 datetime.now(),
-                "create_order(" + Constant.CURRENCY_SYMBOL +
-                ", 'limit'," +
+                "create_order("
+                + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
+                + ", 'limit'," +
                 OrderSideStr + "," + str(OrderQuantityInt) + ", " +
                 str(round(self.IndicatorsObj['SMA']['value'])) + ")",
                 "NetworkError: " + str(ErrorMessage)
@@ -176,8 +182,9 @@ class TraderBaseClass(ProcessBaseClass):
             self.createExchangeInteractionLog(
                 self.ProcessName,
                 datetime.now(),
-                "create_order(" + Constant.CURRENCY_SYMBOL +
-                ", 'limit'," +
+                "create_order("
+                + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
+                + ", 'limit'," +
                 OrderSideStr + "," + str(OrderQuantityInt) + ", " +
                 str(round(self.IndicatorsObj['SMA']['value'])) + ")",
                 "ExchangeError: " + str(ErrorMessage)
@@ -186,8 +193,9 @@ class TraderBaseClass(ProcessBaseClass):
             self.createExchangeInteractionLog(
                 self.ProcessName,
                 datetime.now(),
-                "create_order(" + Constant.CURRENCY_SYMBOL +
-                ", 'limit'," +
+                "create_order("
+                + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
+                + ", 'limit'," +
                 OrderSideStr + "," + str(OrderQuantityInt) + ", " +
                 str(round(self.IndicatorsObj['SMA']['value'])) + ")",
                 "OtherError: " + str(ErrorMessage)
@@ -212,7 +220,7 @@ class TraderBaseClass(ProcessBaseClass):
                 })
             else:
                 self.ExchangeConnectionObj.create_order(
-                    Constant.CURRENCY_SYMBOL,
+                    self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX],
                     'limit', OrderSideStr,
                     OrderQuantityInt,
                     round(max(UpperLimitArr))
@@ -229,8 +237,9 @@ class TraderBaseClass(ProcessBaseClass):
             self.createExchangeInteractionLog(
                 self.ProcessName,
                 datetime.now(),
-                "create_order(" + Constant.CURRENCY_SYMBOL +
-                ", 'limit', 'sell', " + str(OrderQuantityInt) + "," +
+                "create_order("
+                + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
+                + ", 'limit', 'sell', " + str(OrderQuantityInt) + "," +
                 str(round(max(UpperLimitArr))) + ")",
                 "NetworkError: " + str(ErrorMessage)
             )
@@ -238,8 +247,9 @@ class TraderBaseClass(ProcessBaseClass):
             self.createExchangeInteractionLog(
                 self.ProcessName,
                 datetime.now(),
-                "create_order(" + Constant.CURRENCY_SYMBOL +
-                ", 'limit', 'sell', " + str(OrderQuantityInt) + "," +
+                "create_order("
+                + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
+                + ", 'limit', 'sell', " + str(OrderQuantityInt) + "," +
                 str(round(max(UpperLimitArr))) + ")",
                 "ExchangeError: " + str(ErrorMessage)
             )
@@ -247,8 +257,9 @@ class TraderBaseClass(ProcessBaseClass):
             self.createExchangeInteractionLog(
                 self.ProcessName,
                 datetime.now(),
-                "create_order(" + Constant.CURRENCY_SYMBOL +
-                ", 'limit', 'sell', " + str(OrderQuantityInt) + "," +
+                "create_order("
+                + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
+                + ", 'limit', 'sell', " + str(OrderQuantityInt) + "," +
                 str(round(max(UpperLimitArr))) + ")",
                 "OtherError: " + str(ErrorMessage)
             )
@@ -268,7 +279,7 @@ class TraderBaseClass(ProcessBaseClass):
                 })
             else:
                 self.ExchangeConnectionObj.create_order(
-                    Constant.CURRENCY_SYMBOL,
+                    self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX],
                     'limit', OrderSideStr,
                     OrderQuantityInt,
                     round(min(LowerLimitArr))
@@ -285,8 +296,9 @@ class TraderBaseClass(ProcessBaseClass):
             self.createExchangeInteractionLog(
                 self.ProcessName,
                 datetime.now(),
-                "create_order(" + Constant.CURRENCY_SYMBOL +
-                ", 'limit', 'buy', " + str(OrderQuantityInt) + "," +
+                "create_order("
+                + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
+                + ", 'limit', 'buy', " + str(OrderQuantityInt) + "," +
                 str(round(min(LowerLimitArr))) + ")",
                 "NetworkError: " + str(ErrorMessage)
             )
@@ -294,8 +306,9 @@ class TraderBaseClass(ProcessBaseClass):
             self.createExchangeInteractionLog(
                 self.ProcessName,
                 datetime.now(),
-                "create_order(" + Constant.CURRENCY_SYMBOL +
-                ", 'limit', 'buy', " + str(OrderQuantityInt) + "," +
+                "create_order("
+                + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
+                + ", 'limit', 'buy', " + str(OrderQuantityInt) + "," +
                 str(round(min(LowerLimitArr))) + ")",
                 "ExchangeError: " + str(ErrorMessage)
             )
@@ -303,8 +316,9 @@ class TraderBaseClass(ProcessBaseClass):
             self.createExchangeInteractionLog(
                 self.ProcessName,
                 datetime.now(),
-                "create_order(" + Constant.CURRENCY_SYMBOL +
-                ", 'limit', 'buy', " + str(OrderQuantityInt) + "," +
+                "create_order("
+                + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
+                + ", 'limit', 'buy', " + str(OrderQuantityInt) + "," +
                 str(round(min(LowerLimitArr))) + ")",
                 "OtherError: " + str(ErrorMessage)
             )
@@ -321,7 +335,7 @@ class TraderBaseClass(ProcessBaseClass):
                 })
             else:
                 self.ExchangeConnectionObj.create_order(
-                    Constant.CURRENCY_SYMBOL,
+                    self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX],
                     'market',
                     OrderSideStr,
                     -self.OpenPositionCountInt,
@@ -339,8 +353,9 @@ class TraderBaseClass(ProcessBaseClass):
             self.createExchangeInteractionLog(
                 self.ProcessName,
                 datetime.now(),
-                "create_order(" + Constant.CURRENCY_SYMBOL +
-                ", 'market'," +
+                "create_order("
+                + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
+                + ", 'market'," +
                 OrderSideStr + "," + str(-self.OpenPositionCountInt) + ", " +
                 "market" + ")",
                 "NetworkError: " + str(ErrorMessage)
@@ -349,8 +364,9 @@ class TraderBaseClass(ProcessBaseClass):
             self.createExchangeInteractionLog(
                 self.ProcessName,
                 datetime.now(),
-                "create_order(" + Constant.CURRENCY_SYMBOL +
-                ", 'market'," +
+                "create_order("
+                + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
+                + ", 'market'," +
                 OrderSideStr + "," + str(-self.OpenPositionCountInt) + ", " +
                 "market" + ")",
                 "ExchangeError: " + str(ErrorMessage)
@@ -359,99 +375,19 @@ class TraderBaseClass(ProcessBaseClass):
             self.createExchangeInteractionLog(
                 self.ProcessName,
                 datetime.now(),
-                "create_order(" + Constant.CURRENCY_SYMBOL +
-                ", 'market'," +
+                "create_order("
+                + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
+                + ", 'market'," +
                 OrderSideStr + "," + str(-self.OpenPositionCountInt) + ", " +
                 "market" + ")",
                 "OtherError: " + str(ErrorMessage)
             )
 
     def getOrderQuantity(self):
+        AlgorithmExposureFloat = float(self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_EXPOSURE_INDEX])
         if self.ExchangeConnectionDetails['ExchangeName'] == Constant.BINANCE_EXCHANGE_ID:
-            return float(self.CurrentSystemVariables['CurrentPortfolioValue']) * Constant.ALGORITHM_EXPOSURE / \
+            return float(self.CurrentSystemVariables['CurrentPortfolioValue']) * AlgorithmExposureFloat / \
                    self.CurrentSystemVariables['CurrentPrice']
         elif self.ExchangeConnectionDetails['ExchangeName'] == Constant.BITMEX_EXCHANGE_ID:
             CurrentPositionObj = self.ExchangeConnectionObj.private_get_position()
             return CurrentPositionObj[0]['currentQty']
-
-    # region Functions used to long process successes and failures as system executes
-    def templateDatabaseLogger(self, QueryStr, QueryData, FunctionNameStr=" "):
-        try:
-            ConnectionObj = mysql.connector.connect(host=self.DatabaseConnectionDetails['ServerName'],
-                                                 database=self.DatabaseConnectionDetails['DatabaseName'],
-                                                 user=self.DatabaseConnectionDetails['UserName'],
-                                                 password=self.DatabaseConnectionDetails['Password'])
-
-            CursorObj = ConnectionObj.cursor()
-            CursorObj.execute(QueryStr, QueryData)
-            ConnectionObj.commit()
-
-            if ConnectionObj.is_connected():
-                CursorObj.close()
-                ConnectionObj.close()
-            else:
-                print("Failed to close MySQL connection")
-
-        except mysql.connector.Error as error:
-            print(self.ProcessName + " in " + FunctionNameStr + " failed to insert into MySQL table {}".format(error))
-            print(QueryStr)
-            print(QueryData)
-            print(datetime.now())
-
-    def createProcessExecutionLog(self, ProcessNameStr, EntryDateTimeObj, MessageStr):
-        # print("create Process Execution Log")
-        QueryStr = """INSERT INTO ProcessExecutionLog (ProcessName, EntryTime, Message) 
-                               VALUES 
-                               (%s, %s, %s)"""
-
-        QueryData = (
-            ProcessNameStr,
-            EntryDateTimeObj,
-            MessageStr
-        )
-
-        self.templateDatabaseLogger(QueryStr, QueryData, "createProcessExecutionLog")
-
-    def createExchangeInteractionLog(self, ProcessNameStr, EntryDateTimeObj, ExchangeFunctionStr, MessageStr):
-        QueryStr = """INSERT INTO ExchangeInteractionFailureLog (ProcessName, EntryTime, ExchangeFunction, ErrorMessage)
-                                       VALUES
-                                       (%s, %s, %s, %s)"""
-
-        QueryData = (
-            ProcessNameStr,
-            EntryDateTimeObj,
-            ExchangeFunctionStr,
-            MessageStr
-        )
-        self.templateDatabaseLogger(QueryStr, QueryData, "createExchangeInteractionLog")
-
-    def createIndicatorUpdateLog(self, ProcessNameStr, EntryDateTimeObj, IndicatorNameStr, IndicatorDataObj, SuccessStr):
-        QueryStr = """INSERT INTO IndicatorGenerationLog (EntryTime, IndicatorData, Success, ProcessName, IndicatorName)
-                                       VALUES
-                                       (%s, %s, %s, %s, %s)"""
-
-        QueryData = (
-            EntryDateTimeObj,
-            str(IndicatorDataObj),
-            SuccessStr,
-            ProcessNameStr,
-            IndicatorNameStr
-        )
-        self.templateDatabaseLogger(QueryStr, QueryData, "createIndicatorUpdateLog")
-
-    def createOrderLog(self, EntryDateTimeObj, OrderPriceFloat, OrderActionStr, OrderDirectionStr, OrderQuantityInt, PortfolioValueFloat):
-        QueryStr = """INSERT INTO OrderLog (EntryTime, OrderPrice, OrderAction, OrderDirection, OrderQuantity, PortfolioValue)
-                                               VALUES
-                                               (%s, %s, %s, %s, %s, %s)"""
-
-        QueryData = (
-            EntryDateTimeObj,
-            OrderPriceFloat,
-            OrderActionStr,
-            OrderDirectionStr,
-            str(OrderQuantityInt),
-            PortfolioValueFloat
-        )
-        self.templateDatabaseLogger(QueryStr, QueryData, "createOrderLog")
-
-    # endregion
