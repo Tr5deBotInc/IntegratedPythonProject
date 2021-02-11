@@ -3,6 +3,7 @@ from assets import constants as Constant
 import sys as SystemObj
 import mysql.connector
 from datetime import datetime, timezone
+import time
 
 
 class ProcessBaseClass:
@@ -217,4 +218,34 @@ class ProcessBaseClass:
         )
         self.templateDatabaseLogger(QueryStr, QueryData, "createOrderLog")
 
+    # endregion
+
+    # region Functions used to retrieve information from the exchange
+    # This function will retrieve the latest (LimitInt) candles
+    def get1mCandles(self, LimitInt: int):
+        # print("get 1m Candles")
+        if self.ExchangeConnectionObj.has['fetchOHLCV']:
+            time.sleep(self.ExchangeConnectionObj.rateLimit / 1000)
+            try:
+                CandlestickDataArr = self.ExchangeConnectionObj.fetch_ohlcv(
+                    self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX],
+                    "1m",
+                    since=round((time.time() * 1000) - (1000 * LimitInt * 60)),
+                    limit=LimitInt
+                )
+                return CandlestickDataArr
+            except Exception as ErrorMessage:
+
+                self.createExchangeInteractionLog(
+                    self.ProcessName,
+                    datetime.now(),
+                    "fetch_ohlcv("
+                    + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
+                    + "," + "1m,since=("
+                    + str((time.time() * 1000) - (1000 * LimitInt * 60)) + "),limit=" + str(LimitInt) + ")",
+                    ErrorMessage
+                )
+
+        else:
+            return False
     # endregion

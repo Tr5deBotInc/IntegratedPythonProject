@@ -1,6 +1,8 @@
 from FrameworkBaseClasses.TraderBaseClass import TraderBaseClass
+from assets import constants as Constant
 
 from datetime import datetime
+import sys as SystemObj
 
 
 class TraderClass(TraderBaseClass):
@@ -10,6 +12,17 @@ class TraderClass(TraderBaseClass):
         super().__init__()
 
     def initiateExecution(self):
+        AlgorithmNameStr = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_ALGORITHM_NAME_INDEX]
+
+        if AlgorithmNameStr == Constant.EMA_21_ANALYSER_BASE_VERSION:
+            self.ema21AnalyzerAlgorithm()
+        elif AlgorithmNameStr == Constant.BB_RSI_ANALYSER_BASE_VERSION:
+            self.bbRsiTradingAlgorithm()
+        else:
+            print('Trading algorithm ' + AlgorithmNameStr + 'was not found')
+            SystemObj.exit()
+
+    def bbRsiTradingAlgorithm(self):
         self.OpenOrderCountInt = self.countOpenOrders()
         self.OpenPositionCountInt = float(self.checkPosition())
 
@@ -58,7 +71,8 @@ class TraderClass(TraderBaseClass):
         # region Actual Algorithm
         self.createProcessExecutionLog(self.ProcessName, datetime.now(),
                                        "Process Update: Got to the start of the actual Algorithm. Open Position Count: "
-                                       + str(self.OpenPositionCountInt) + ". Open Order Count: " + str(self.OpenOrderCountInt))
+                                       + str(self.OpenPositionCountInt) + ". Open Order Count: " + str(
+                                           self.OpenOrderCountInt))
 
         self.createProcessExecutionLog(self.ProcessName, datetime.now(),
                                        "Indicators: " + str(self.IndicatorsObj))
@@ -96,3 +110,7 @@ class TraderClass(TraderBaseClass):
                         self.placeOpeningOrders()
                     return
         # endregion
+
+    def ema21AnalyzerAlgorithm(self):
+
+        pass

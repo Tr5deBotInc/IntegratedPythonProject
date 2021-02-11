@@ -29,3 +29,7 @@ FIRST_FUNDING_HOUR = 4
 SECOND_FUNDING_HOUR = 12
 THIRD_FUNDING_HOUR = 20
 
+# Algorithm name related variables
+EMA_21_ANALYSER_BASE_VERSION = 'e_m_a_21_analyser'
+
+BB_RSI_ANALYSER_BASE_VERSION = 'bb_rsi_analyser'

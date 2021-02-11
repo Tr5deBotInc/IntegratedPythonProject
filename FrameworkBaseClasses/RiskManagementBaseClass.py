@@ -37,7 +37,8 @@ class RiskManagementBaseClass(ProcessBaseClass):
                 self.CurrentSystemVariables['TradingState'] == 'Manual Halt':
             self.CurrentSystemVariables['TradingState'] = AlgorithmTradingState
 
-        if self.ExchangeConnectionDetails['ExchangeName'] == Constant.BINANCE_EXCHANGE_ID:
+        # region Funding Time related checks for bitmex
+        if self.ExchangeConnectionDetails['ExchangeName'] == Constant.BITMEX_EXCHANGE_ID:
             CurrentDateTimeObj = datetime.now(timezone.utc).replace(tzinfo=None)
             FundingTimeObjArr = [
                 datetime.now().replace(hour=Constant.FIRST_FUNDING_HOUR, minute=0),
@@ -59,6 +60,8 @@ class RiskManagementBaseClass(ProcessBaseClass):
             if not isFundingTimeBool and (AlgorithmTradingState == 'Market Dead Stop'
                                           or AlgorithmTradingState == 'Market Halt'):
                 self.CurrentSystemVariables['TradingState'] = 'Active'
+        # endregion
+
         if AlgorithmTradingState != self.CurrentSystemVariables['TradingState']:
             if self.CurrentSystemVariables['TradingState'] is None:
                 self.CurrentSystemVariables['TradingState'] = AlgorithmTradingState

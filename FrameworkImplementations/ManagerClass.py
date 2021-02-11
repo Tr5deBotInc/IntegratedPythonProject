@@ -5,12 +5,24 @@ from FrameworkImplementations.TraderClass import TraderClass
 from assets import constants as Constant
 from assets import ProjectFunctions
 
-from datetime import datetime
+from datetime import datetime, timedelta
+import sys as SystemObj
+import time
+from threading import Timer
 
 
 class ManagerClass(ManagerBaseClass):
     FiveMinCandleArr = []
     CurrentSimpleMovingAverageFloat = None
+    CurrentExponentialMovingAverageRetestInt = {
+        'prev_EMA': None,
+        'prev_candle': None,
+        'retest_candle_count': None,
+        'placement': None
+    }
+    CurrentExponentialMovingAverageObj = {
+        'value': None
+    }
     BollingerBandObj = {
         'upper': None,
         'lower': None
@@ -27,6 +39,16 @@ class ManagerClass(ManagerBaseClass):
         # print("Manager Class Constructor")
         super().__init__()
         self.initializeProcessObjects()
+
+        # region Making sure system starts at the beginning of 5 minutes
+        # now = datetime.now()
+        # next_run = now.replace(minute=int(now.minute / 5) * 5, second=0, microsecond=0) + timedelta(minutes=5)
+        # sleep_time = (next_run - now).total_seconds()
+        # print(sleep_time)
+        # time.sleep(sleep_time)
+        # print(datetime.now())
+        # endregion
+
         self.startProcessThreading()
 
     def initializeProcessObjects(self):
@@ -39,6 +61,8 @@ class ManagerClass(ManagerBaseClass):
             'BB': self.BollingerBandObj,
             'RSI': self.RsiBandObj,
             'SMA': self.CurrentSimpleMovingAverageFloat,
+            'EMA': self.CurrentExponentialMovingAverageObj,
+            'EMA_RETEST': self.CurrentExponentialMovingAverageRetestInt,
             'TimeStamp': self.IndicatorTimeStampObj
         })
         IndicatorGenerationObj.setCandleArr({
@@ -59,6 +83,8 @@ class ManagerClass(ManagerBaseClass):
             'BB': self.BollingerBandObj,
             'RSI': self.RsiBandObj,
             'SMA': self.CurrentSimpleMovingAverageFloat,
+            'EMA': self.CurrentExponentialMovingAverageObj,
+            'EMA_RETEST': self.CurrentExponentialMovingAverageRetestInt,
             'TimeStamp': self.IndicatorTimeStampObj
         })
         TraderObj.setSystemVariables(self.SystemVariablesObj)
@@ -77,6 +103,15 @@ class ManagerClass(ManagerBaseClass):
             int(self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_INDICATOR_CANDLE_DURATION_INDEX])
         FrameCountInt = \
             int(self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_INDICATOR_FRAME_COUNT_INDEX])
+        EmaSmoothingFactor = 2
+
+        BollingerBandUsedBool = False
+        if self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_BB_STANDARD_DEVIATION_INDEX] is not None:
+            BollingerBandUsedBool = True
+
+        RsiUsedBool = False
+        if self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_RSI_LOWER_INTENSITY_INDEX] is not None and self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_RSI_UPPER_INTENSITY_INDEX] is not None:
+            RsiUsedBool = True
 
         CandlestickDataArr = self.get1mCandles(CandleDurationInt * FrameCountInt)
         for iterator in range(0, len(CandlestickDataArr), CandleDurationInt):
@@ -88,25 +123,28 @@ class ManagerClass(ManagerBaseClass):
                 'time_stamp':
                     CandlestickDataArr[iterator + CandleDurationInt-1][Constant.CANDLE_TIMESTAMP_INDEX]
             })
-        BollingerBandObj = ProjectFunctions.getBollingerBands(self.FiveMinCandleArr, self.AlgorithmConfigurationObj)
-        if 'upper' in BollingerBandObj and 'lower' in BollingerBandObj and\
-                ProjectFunctions.checkIfNumber(BollingerBandObj['upper']) and\
-                ProjectFunctions.checkIfNumber(BollingerBandObj['lower']):
-            self.createIndicatorUpdateLog(self.ProcessName,  datetime.now(), 'Bollinger Band', BollingerBandObj, 'True')
-            self.BollingerBandObj = BollingerBandObj
-        else:
-            self.createIndicatorUpdateLog(self.ProcessName, datetime.now(), 'Bollinger Band', {}, 'False')
 
-        RsiBandObj = ProjectFunctions.getRsiBands(self.FiveMinCandleArr, self.AlgorithmConfigurationObj)
-        if 'upper' in RsiBandObj and 'lower' in RsiBandObj and\
-                ProjectFunctions.checkIfNumber(RsiBandObj['upper']) and\
-                ProjectFunctions.checkIfNumber(RsiBandObj['lower']):
-            self.createIndicatorUpdateLog(self.ProcessName, datetime.now(), 'RSI Band', RsiBandObj, 'True')
-            self.RsiBandObj = RsiBandObj
-        else:
-            self.createIndicatorUpdateLog(self.ProcessName, datetime.now(), 'RSI Band', {}, 'False')
+        if BollingerBandUsedBool:
+            BollingerBandObj = ProjectFunctions.getBollingerBands(self.FiveMinCandleArr, self.AlgorithmConfigurationObj)
+            if 'upper' in BollingerBandObj and 'lower' in BollingerBandObj and\
+                    ProjectFunctions.checkIfNumber(BollingerBandObj['upper']) and\
+                    ProjectFunctions.checkIfNumber(BollingerBandObj['lower']):
+                self.createIndicatorUpdateLog(self.ProcessName,  datetime.now(), 'Bollinger Band', BollingerBandObj, 'True')
+                self.BollingerBandObj = BollingerBandObj
+            else:
+                self.createIndicatorUpdateLog(self.ProcessName, datetime.now(), 'Bollinger Band', {}, 'False')
 
-        self.CurrentSimpleMovingAverageFloat = ProjectFunctions.getSimpleMovingAverage(self.FiveMinCandleArr, "initializeSystemData")
+        if RsiUsedBool:
+            RsiBandObj = ProjectFunctions.getRsiBands(self.FiveMinCandleArr, self.AlgorithmConfigurationObj)
+            if 'upper' in RsiBandObj and 'lower' in RsiBandObj and\
+                    ProjectFunctions.checkIfNumber(RsiBandObj['upper']) and\
+                    ProjectFunctions.checkIfNumber(RsiBandObj['lower']):
+                self.createIndicatorUpdateLog(self.ProcessName, datetime.now(), 'RSI Band', RsiBandObj, 'True')
+                self.RsiBandObj = RsiBandObj
+            else:
+                self.createIndicatorUpdateLog(self.ProcessName, datetime.now(), 'RSI Band', {}, 'False')
+
+        self.CurrentSimpleMovingAverageFloat = ProjectFunctions.getSimpleMovingAverage(self.FiveMinCandleArr)
         self.IndicatorTimeStampObj = {'datetime': datetime.now()}
 
         if ProjectFunctions.checkIfNumber(self.CurrentSimpleMovingAverageFloat['value']):

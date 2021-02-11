@@ -19,7 +19,7 @@ class TraderBaseClass(ProcessBaseClass):
         # print("Trader Base Class Constructor")
         self.ProcessName = "Trader Process"
         self.ObjectTypeValidationArr = {
-            'Indicators': ['BB', 'RSI', 'SMA'],
+            'Indicators': ['BB', 'RSI', 'SMA', 'EMA_RETEST'],
             'SystemVariables': [
                 'CurrentPrice',
                 'CurrentAccountBalance',
