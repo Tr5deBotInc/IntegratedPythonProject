@@ -3,12 +3,13 @@ from assets import constants as Constant
 import math
 
 
-def getBollingerBands(CandleDataArr):
+def getBollingerBands(CandleDataArr, AlgorithmConfigurationObj):
     # print("get Bollinger Bands")
-    SimpleMovingAverageFloat = getSimpleMovingAverage(CandleDataArr, "getBollingerBands")
+    BollingerBandStandardDeviationFloat = float(AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_BB_STANDARD_DEVIATION_INDEX])
+    SimpleMovingAverageFloat = getSimpleMovingAverage(CandleDataArr)
     StandardDeviationFloat = getStandardDeviationOfCandleArr(CandleDataArr)
-    UpperBandFloat = SimpleMovingAverageFloat['value'] + (StandardDeviationFloat * Constant.BB_STANDARD_DEVIATION)
-    LowerBandFloat = SimpleMovingAverageFloat['value'] - (StandardDeviationFloat * Constant.BB_STANDARD_DEVIATION)
+    UpperBandFloat = SimpleMovingAverageFloat['value'] + (StandardDeviationFloat * BollingerBandStandardDeviationFloat)
+    LowerBandFloat = SimpleMovingAverageFloat['value'] - (StandardDeviationFloat * BollingerBandStandardDeviationFloat)
     BollingerBandObj = {
         'upper': UpperBandFloat,
         'lower': LowerBandFloat
@@ -17,8 +18,11 @@ def getBollingerBands(CandleDataArr):
     return BollingerBandObj
 
 
-def getRsiBands(CandleDataArr):
+def getRsiBands(CandleDataArr, AlgorithmConfigurationObj):
     # print("get RSI Bands")
+    RsiUpperBandIntensityFloat = float(AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_RSI_UPPER_INTENSITY_INDEX])
+    RsiLowerBandIntensityFloat = float(AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_RSI_LOWER_INTENSITY_INDEX])
+    IndicatorFrameCount = int(AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_INDICATOR_FRAME_COUNT_INDEX])
     ArrLengthInt = len(CandleDataArr)
     CandlePositiveChangeArr = []
     CandleNegativeChangeArr = []
@@ -36,16 +40,16 @@ def getRsiBands(CandleDataArr):
     if len(CandleNegativeChangeArr) > 0:
         AverageNegativeChangeFloat = sum(CandleNegativeChangeArr)/ArrLengthInt
 
-    SimpleMovingAverageFloat = getSimpleMovingAverage(CandleDataArr, "getRsiBands")
+    SimpleMovingAverageFloat = getSimpleMovingAverage(CandleDataArr)
 
-    AverageGain = (AveragePositiveChangeFloat/Constant.RSI_UPPER_BAND_INTENSITY) * \
-                  (100-Constant.RSI_UPPER_BAND_INTENSITY)
+    AverageGain = (AveragePositiveChangeFloat/RsiUpperBandIntensityFloat) * \
+                  (100-RsiUpperBandIntensityFloat)
 
-    AverageLoss = (AverageNegativeChangeFloat * Constant.RSI_LOWER_BAND_INTENSITY) / \
-                  (100 - Constant.RSI_LOWER_BAND_INTENSITY)
+    AverageLoss = (AverageNegativeChangeFloat * RsiLowerBandIntensityFloat) / \
+                  (100 - RsiLowerBandIntensityFloat)
 
-    UpperBandFloat = SimpleMovingAverageFloat['value'] + AverageGain * Constant.INDICATOR_FRAME_COUNT
-    LowerBandFloat = SimpleMovingAverageFloat['value'] - AverageLoss * Constant.INDICATOR_FRAME_COUNT
+    UpperBandFloat = SimpleMovingAverageFloat['value'] + AverageGain * IndicatorFrameCount
+    LowerBandFloat = SimpleMovingAverageFloat['value'] - AverageLoss * IndicatorFrameCount
 
     RsiBandObj = {
         'upper': UpperBandFloat,
@@ -55,7 +59,7 @@ def getRsiBands(CandleDataArr):
     return RsiBandObj
 
 
-def getSimpleMovingAverage(CandleDataArr, FunctionNameStr="not given"):
+def getSimpleMovingAverage(CandleDataArr):
     # print("get Simple Moving Average")
     CandleArrSumFloat = 0
     for CandleObj in CandleDataArr:
@@ -66,6 +70,15 @@ def getSimpleMovingAverage(CandleDataArr, FunctionNameStr="not given"):
         'value': SimpleMovingAverageFloat
     }
     return SimpleMovingAverageObj
+
+
+def getExponentialMovingAverage(CandleDataArr, FrameCountInt, PrevExponentialMovingAverageFloat, SmoothingFactorFloat):
+    CurrentValueFloat = CandleDataArr[len(CandleDataArr)-1]['mid']
+    ExponentialMovingAverageFloat = (CurrentValueFloat * (SmoothingFactorFloat / (1 + FrameCountInt))) + (PrevExponentialMovingAverageFloat * (1 - (SmoothingFactorFloat / (1 + FrameCountInt))))
+    ExponentialMovingAverageObj = {
+        'value': ExponentialMovingAverageFloat
+    }
+    return ExponentialMovingAverageObj
 
 
 def getStandardDeviationOfCandleArr(CandleDataArr):

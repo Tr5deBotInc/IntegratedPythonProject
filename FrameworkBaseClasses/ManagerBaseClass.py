@@ -11,23 +11,11 @@ import time
 from datetime import datetime
 
 
-class ManagerBaseClass:
+class ManagerBaseClass(ProcessBaseClass):
     ProcessName = 'Manager Process'
     ThreadInstantiationArr = []
-    DatabaseConnectionDetails = {
-        'ServerName': '',
-        'DatabaseName': '',
-        'UserName': '',
-        'Password': ''
-    }
-    ExchangeConnectionDetails = {
-        'ExchangeName': '',
-        'ApiKey': '',
-        'ApiSecret': ''
-    }
-    ExchangeConnectionObj = None
     SystemVariablesObj = {
-        'AlgorithmId': 'bb_rsi_2020',
+        'AlgorithmId': None,
         'CurrentPrice': None,
         'CurrentAccountBalance': None,
         'CurrentPortfolioValue': None,
@@ -72,6 +60,20 @@ class ManagerBaseClass:
                     "Process took " + str(time.time() - StartingTimeInt) + " seconds to execute")
                 StartingTimeInt = time.time()
 
+    def requestProjectAlgorithmSelection(self):
+        AlgorithmNameArr = self.getAlgorithmNames()
+        AlgorithmOptionsStr = ""
+        for AlgorithmNameIndexInt in range(0, len(AlgorithmNameArr)):
+            AlgorithmOptionsStr += str(AlgorithmNameIndexInt+1) + ". " + AlgorithmNameArr[AlgorithmNameIndexInt][0] + '\n'
+        SelectedAlgoeithmNameInputStr = input("Please select an algorithm:\n" + AlgorithmOptionsStr + "Input: ")
+
+        if 0 <= int(SelectedAlgoeithmNameInputStr) <= len(AlgorithmNameArr):
+            self.AlgorithmConfigurationObj = \
+                self.getAlgorithmConfigurationObj(AlgorithmNameArr[int(SelectedAlgoeithmNameInputStr) - 1][0])
+            self.SystemVariablesObj['AlgorithmId'] = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_ALGORITHM_NAME_INDEX]
+            self.SystemVariablesObj['TradingState'] = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_STATE_INDEX]
+        self.setExchangeConnection()
+
     def requestProjectInitiationState(self):
         # print("request Project Initiation State")
         SystemStateInputStr = input("Please provide the system state:\n1. Active\n2. Testing\n3. Backtesting\nInput: ")
@@ -89,12 +91,12 @@ class ManagerBaseClass:
         # print("set System State")
         self.SystemVariablesObj['SystemState'] = SystemStateStr
         if SystemStateStr == 'Active':
-            self.DatabaseConnectionDetails['ServerName'] = EnvironmentDetails.HOST
-            self.DatabaseConnectionDetails['DatabaseName'] = EnvironmentDetails.DATABASE
-            self.DatabaseConnectionDetails['UserName'] = EnvironmentDetails.USER
-            self.DatabaseConnectionDetails['Password'] = EnvironmentDetails.PASSWORD
+            self.DatabaseConnectionDetails['ServerName'] = EnvironmentDetails.MULTIPLE_ALGORITHM_HOST
+            self.DatabaseConnectionDetails['DatabaseName'] = EnvironmentDetails.MULTIPLE_ALGORITHM_DATABASE
+            self.DatabaseConnectionDetails['UserName'] = EnvironmentDetails.MULTIPLE_ALGORITHM_USER
+            self.DatabaseConnectionDetails['Password'] = EnvironmentDetails.MULTIPLE_ALGORITHM_PASSWORD
 
-            self.setExchangeConnection()
+            self.requestProjectAlgorithmSelection()
 
         elif SystemStateStr == 'Testing':
             pass
@@ -104,11 +106,14 @@ class ManagerBaseClass:
 
     def setExchangeConnection(self):
         # print("set Exchange Connection")
-        ExchangeInputStr = input("Please select an exchange:\n1. Bitmex\n2. Binance\nInput: ")
-        if ExchangeInputStr.strip() == '1':
-            self.ExchangeConnectionDetails['ExchangeName'] = Constant.BITMEX_EXCHANGE_ID
-            self.ExchangeConnectionDetails['ApiKey'] = EnvironmentDetails.BITMEX_API_KEY
-            self.ExchangeConnectionDetails['ApiSecret'] = EnvironmentDetails.BITMEX_API_SECRET
+        self.ExchangeConnectionDetails['ExchangeName'] = \
+            self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_EXCHANGE_NAME_INDEX]
+        self.ExchangeConnectionDetails['ApiKey'] = \
+            self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_API_KEY_INDEX]
+        self.ExchangeConnectionDetails['ApiSecret'] = \
+            self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_API_SECRET_INDEX]
+        if self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_EXCHANGE_NAME_INDEX] == \
+                Constant.BITMEX_EXCHANGE_ID:
             try:
                 ExchangeClassObj = getattr(ccxt, self.ExchangeConnectionDetails['ExchangeName'])
                 self.ExchangeConnectionObj = ExchangeClassObj({
@@ -116,16 +121,15 @@ class ManagerBaseClass:
                     'secret': self.ExchangeConnectionDetails['ApiSecret'],
                     'timeout': 30000,
                     'enableRateLimit': True,
-                    'symbols': [Constant.CURRENCY_SYMBOL]
+                    'symbols': [
+                        self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
+                    ]
                 })
 
             except Exception as ErrorMessage:
                 print("Something went wrong when setting up Exchange connection: " + str(ErrorMessage))
-        elif ExchangeInputStr.strip() == '2':
-            self.ExchangeConnectionDetails['ExchangeName'] = Constant.BINANCE_EXCHANGE_ID
-            self.ExchangeConnectionDetails['ApiKey'] = EnvironmentDetails.BINANCE_API_KEY
-            self.ExchangeConnectionDetails['ApiSecret'] = EnvironmentDetails.BINANCE_API_SECRET
-
+        elif self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_EXCHANGE_NAME_INDEX] == \
+                Constant.BINANCE_EXCHANGE_ID:
             try:
                 ExchangeClassObj = getattr(ccxt, self.ExchangeConnectionDetails['ExchangeName'])
                 self.ExchangeConnectionObj = ExchangeClassObj({
@@ -133,7 +137,9 @@ class ManagerBaseClass:
                     'secret': self.ExchangeConnectionDetails['ApiSecret'],
                     'timeout': 30000,
                     'enableRateLimit': True,
-                    'symbols': [Constant.CURRENCY_SYMBOL],
+                    'symbols': [
+                        self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
+                    ],
                     'options': {
                         'defaultType': 'margin'
                     }
@@ -142,7 +148,7 @@ class ManagerBaseClass:
                 print("Something went wrong when setting up Exchange connection for Binance: " + str(ErrorMessage))
                 SystemObj.exit()
         else:
-            print("Invalid selection")
+            print("Invalid Exchange Name Selection")
             SystemObj.exit()
 
         self.ExchangeConnectionObj.load_markets()
@@ -151,39 +157,14 @@ class ManagerBaseClass:
     # This function is to be overwritten by the child class
     def initializeSystemData(self):
         pass
-
     # endregion
 
     # region Functions used to retrieve information from the exchange
-    # This function will retrieve the latest (LimitInt) candles
-    def get1mCandles(self, LimitInt: int):
-        # print("get 1m Candles")
-        if self.ExchangeConnectionObj.has['fetchOHLCV']:
-            time.sleep(self.ExchangeConnectionObj.rateLimit / 1000)
-            try:
-                CandlestickDataArr = self.ExchangeConnectionObj.fetch_ohlcv(
-                    Constant.CURRENCY_SYMBOL,
-                    "1m",
-                    since=round((time.time()*1000) - (1000 * LimitInt * 60)),
-                    limit=LimitInt
-                )
-                return CandlestickDataArr
-            except Exception as ErrorMessage:
-
-                self.createExchangeInteractionLog(
-                    self.ProcessName,
-                    datetime.now(),
-                    "fetch_ohlcv(" + Constant.CURRENCY_SYMBOL + "," + "1m,since=("
-                    + str((time.time()*1000) - (1000 * LimitInt * 60)) + "),limit=" + str(LimitInt) + ")",
-                    ErrorMessage
-                )
-
-        else:
-            return False
-
     def getCurrentPrice(self):
         try:
-            self.SystemVariablesObj['CurrentPrice'] = self.ExchangeConnectionObj.fetch_ticker(Constant.CURRENCY_SYMBOL)['bid']
+            self.SystemVariablesObj['CurrentPrice'] = self.ExchangeConnectionObj.fetch_ticker(
+                        self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
+            )['bid']
         except Exception as ErrorMessage:
             # Please create a log table and a log function for exchange related retrievals.
             # We will only log errors in this table
@@ -233,86 +214,29 @@ class ManagerBaseClass:
             self.SystemVariablesObj['CurrentPortfolioValue'] = BalanceObj['total']['BTC']
     # endregion
 
-    # region Functions used to long process successes and failures as system executes
-    def templateDatabaseLogger(self, QueryStr, QueryData, FunctionNameStr=" "):
-        try:
-            ConnectionObj = mysql.connector.connect(host=self.DatabaseConnectionDetails['ServerName'],
-                                                 database=self.DatabaseConnectionDetails['DatabaseName'],
-                                                 user=self.DatabaseConnectionDetails['UserName'],
-                                                 password=self.DatabaseConnectionDetails['Password'])
-
-            CursorObj = ConnectionObj.cursor()
-            CursorObj.execute(QueryStr, QueryData)
-            ConnectionObj.commit()
-
-            if ConnectionObj.is_connected():
-                CursorObj.close()
-                ConnectionObj.close()
-            else:
-                print("Failed to close MySQL connection")
-
-        except mysql.connector.Error as error:
-            print(self.ProcessName + " in " + FunctionNameStr + " failed to insert into MySQL table {}".format(error))
-            print(QueryStr)
-            print(QueryData)
-            print(datetime.now())
-
-    def createProcessExecutionLog(self, ProcessNameStr, EntryDateTimeObj, MessageStr):
-        # print("create Process Execution Log")
-        QueryStr = """INSERT INTO ProcessExecutionLog (ProcessName, EntryTime, Message) 
-                               VALUES 
-                               (%s, %s, %s)"""
+    # region Function used to retrieve algorithm configurations from database
+    def getAlgorithmNames(self):
+        # print("get Algorithm Names")
+        QueryStr = """Select AlgorithmName From AlgorithmConfiguration"""
 
         QueryData = (
-            ProcessNameStr,
-            EntryDateTimeObj,
-            MessageStr
         )
 
-        self.templateDatabaseLogger(QueryStr, QueryData, "createProcessExecutionLog")
+        AlgorithmNameArr = self.templateDatabaseRetriever(QueryStr, QueryData, "getAlgorithmNames")
+        if AlgorithmNameArr is None:
+            return
+        return AlgorithmNameArr
 
-    def createExchangeInteractionLog(self, ProcessNameStr, EntryDateTimeObj, ExchangeFunctionStr, MessageStr):
-        QueryStr = """INSERT INTO ExchangeInteractionFailureLog (ProcessName, EntryTime, ExchangeFunction, ErrorMessage)
-                                       VALUES
-                                       (%s, %s, %s, %s)"""
-        print(ProcessNameStr)
-        print(EntryDateTimeObj)
-        print(ExchangeFunctionStr)
-        print(MessageStr)
-        QueryData = (
-            ProcessNameStr,
-            EntryDateTimeObj,
-            ExchangeFunctionStr,
-            MessageStr
-        )
-        self.templateDatabaseLogger(QueryStr, QueryData, "createExchangeInteractionLog")
-
-    def createIndicatorUpdateLog(self, ProcessNameStr, EntryDateTimeObj, IndicatorNameStr, IndicatorDataObj, SuccessStr):
-        QueryStr = """INSERT INTO IndicatorGenerationLog (EntryTime, IndicatorData, Success, ProcessName, IndicatorName)
-                                       VALUES
-                                       (%s, %s, %s, %s, %s)"""
+    def getAlgorithmConfigurationObj(self, AlgorithmNameStr):
+        # print("get Algorithm Configuration Object")
+        QueryStr = """Select * From AlgorithmConfiguration WHERE AlgorithmName = %s"""
 
         QueryData = (
-            EntryDateTimeObj,
-            str(IndicatorDataObj),
-            SuccessStr,
-            ProcessNameStr,
-            IndicatorNameStr
-        )
-        self.templateDatabaseLogger(QueryStr, QueryData, "createIndicatorUpdateLog")
-
-    def createPriceLogEntry(self, EntryDateTimeObj, CurrencyPrice):
-        # print("create Process Execution Log")
-        QueryStr = """INSERT INTO PriceLog (ExchangeName, CurrencySymbol, EntryTime, CurrencyPrice) 
-                                      VALUES 
-                                      (%s, %s, %s, %s)"""
-
-        QueryData = (
-            self.ExchangeConnectionDetails['ExchangeName'],
-            Constant.CURRENCY_SYMBOL,
-            EntryDateTimeObj,
-            CurrencyPrice
+            AlgorithmNameStr,
         )
 
-        self.templateDatabaseLogger(QueryStr, QueryData, "createPriceLogEntry")
+        AlgorithmConfigurationObj = self.templateDatabaseRetriever(QueryStr, QueryData, "getAlgorithmConfigurationObj")
+        if AlgorithmConfigurationObj is None:
+            return
+        return AlgorithmConfigurationObj[0]
     # endregion
