@@ -141,49 +141,54 @@ class ProcessBaseClass:
             print(datetime.now())
     # endregion
 
-    # region Functions used to long process successes and failures as system executes
+    # region Functions used to log process successes and failures as system executes
     def createProcessExecutionLog(self, ProcessNameStr, EntryDateTimeObj, MessageStr):
         # print("create Process Execution Log")
-        QueryStr = """INSERT INTO ProcessExecutionLog (ProcessName, EntryTime, Message) 
+        SelectedAlgorithmId = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_ID_INDEX]
+
+        QueryStr = """INSERT INTO ProcessExecutionLog (ProcessName, EntryTime, Message, AlgorithmConfiguration) 
                                VALUES 
-                               (%s, %s, %s)"""
+                               (%s, %s, %s, %s)"""
 
         QueryData = (
             ProcessNameStr,
             EntryDateTimeObj,
-            MessageStr
+            MessageStr,
+            SelectedAlgorithmId
         )
 
         self.templateDatabaseLogger(QueryStr, QueryData, "createProcessExecutionLog")
 
     def createExchangeInteractionLog(self, ProcessNameStr, EntryDateTimeObj, ExchangeFunctionStr, MessageStr):
-        QueryStr = """INSERT INTO ExchangeInteractionFailureLog (ProcessName, EntryTime, ExchangeFunction, ErrorMessage)
+        SelectedAlgorithmId = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_ID_INDEX]
+
+        QueryStr = """INSERT INTO ExchangeInteractionFailureLog (ProcessName, EntryTime, ExchangeFunction, ErrorMessage, AlgorithmConfiguration)
                                        VALUES
-                                       (%s, %s, %s, %s)"""
-        print(ProcessNameStr)
-        print(EntryDateTimeObj)
-        print(ExchangeFunctionStr)
-        print(MessageStr)
+                                       (%s, %s, %s, %s, %s)"""
         QueryData = (
             ProcessNameStr,
             EntryDateTimeObj,
             ExchangeFunctionStr,
-            MessageStr
+            MessageStr,
+            SelectedAlgorithmId
         )
         self.templateDatabaseLogger(QueryStr, QueryData, "createExchangeInteractionLog")
 
     def createIndicatorUpdateLog(self, ProcessNameStr, EntryDateTimeObj, IndicatorNameStr, IndicatorDataObj,
                                  SuccessStr):
-        QueryStr = """INSERT INTO IndicatorGenerationLog (EntryTime, IndicatorData, Success, ProcessName, IndicatorName)
+        SelectedAlgorithmId = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_ID_INDEX]
+
+        QueryStr = """INSERT INTO IndicatorGenerationLog (EntryTime, IndicatorData, Success, ProcessName, IndicatorName, AlgorithmConfiguration)
                                        VALUES
-                                       (%s, %s, %s, %s, %s)"""
+                                       (%s, %s, %s, %s, %s, %s)"""
 
         QueryData = (
             EntryDateTimeObj,
             str(IndicatorDataObj),
             SuccessStr,
             ProcessNameStr,
-            IndicatorNameStr
+            IndicatorNameStr,
+            SelectedAlgorithmId
         )
         self.templateDatabaseLogger(QueryStr, QueryData, "createIndicatorUpdateLog")
 
@@ -204,9 +209,11 @@ class ProcessBaseClass:
 
     def createOrderLog(self, EntryDateTimeObj, OrderPriceFloat, OrderActionStr, OrderDirectionStr, OrderQuantityInt,
                        PortfolioValueFloat):
-        QueryStr = """INSERT INTO OrderLog (EntryTime, OrderPrice, OrderAction, OrderDirection, OrderQuantity, PortfolioValue)
+        SelectedAlgorithmId = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_ID_INDEX]
+
+        QueryStr = """INSERT INTO OrderLog (EntryTime, OrderPrice, OrderAction, OrderDirection, OrderQuantity, PortfolioValue, AlgorithmConfiguration)
                                                VALUES
-                                               (%s, %s, %s, %s, %s, %s)"""
+                                               (%s, %s, %s, %s, %s, %s, %s)"""
 
         QueryData = (
             EntryDateTimeObj,
@@ -214,7 +221,8 @@ class ProcessBaseClass:
             OrderActionStr,
             OrderDirectionStr,
             str(OrderQuantityInt),
-            PortfolioValueFloat
+            PortfolioValueFloat,
+            SelectedAlgorithmId
         )
         self.templateDatabaseLogger(QueryStr, QueryData, "createOrderLog")
 

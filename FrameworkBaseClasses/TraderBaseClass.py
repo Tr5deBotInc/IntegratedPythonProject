@@ -71,9 +71,9 @@ class TraderBaseClass(ProcessBaseClass):
                 BinanceAssetObjArr = self.ExchangeConnectionObj.fetchBalance()['info']['userAssets']
                 for BinanceAssetObj in BinanceAssetObjArr:
                     if BinanceAssetObj['asset'] == self.MarginTradingCurrency:
-                        if float(BinanceAssetObj['netAsset']) > 0.0001:
+                        if float(BinanceAssetObj['netAsset']) > 0.00019:
                             return ProjectFunctions.truncateFloat(abs(float(BinanceAssetObj['netAsset'])), 4)
-                        elif float(BinanceAssetObj['netAsset']) < -0.0001:
+                        elif float(BinanceAssetObj['netAsset']) < -0.00019:
                             return ProjectFunctions.truncateFloat(-abs(float(BinanceAssetObj['netAsset'])), 4)
             else:
                 CurrentPositionObj = self.ExchangeConnectionObj.private_get_position()
@@ -205,6 +205,7 @@ class TraderBaseClass(ProcessBaseClass):
         UpperLimitArr = [self.IndicatorsObj['BB']['upper'], self.IndicatorsObj['RSI']['upper']]
         LowerLimitArr = [self.IndicatorsObj['BB']['lower'], self.IndicatorsObj['RSI']['lower']]
         OrderQuantityInt = format(self.getOrderQuantity(), '.4f')
+
         try:
             OrderSideStr = 'sell'
             if self.ExchangeConnectionDetails['ExchangeName'] == Constant.BINANCE_EXCHANGE_ID:
@@ -391,3 +392,16 @@ class TraderBaseClass(ProcessBaseClass):
         elif self.ExchangeConnectionDetails['ExchangeName'] == Constant.BITMEX_EXCHANGE_ID:
             CurrentPositionObj = self.ExchangeConnectionObj.private_get_position()
             return CurrentPositionObj[0]['currentQty']
+
+    def getCurrentPrice(self):
+        try:
+            self.CurrentSystemVariables['CurrentPrice'] = self.ExchangeConnectionObj.fetch_ticker('BTC/USDT')['bid']
+            self.createPriceLogEntry(datetime.now(), self.CurrentSystemVariables['CurrentPrice'])
+        except Exception as ErrorMessage:
+            # Please create a log table and a log function for exchange related retrievals.
+            # We will only log errors in this table
+            self.createExchangeInteractionLog(
+                self.ProcessName,
+                datetime.now(),
+                "WebSocket get_ticket()['mid]", ErrorMessage
+            )

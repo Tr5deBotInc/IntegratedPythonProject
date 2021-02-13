@@ -15,7 +15,7 @@ class ManagerBaseClass(ProcessBaseClass):
     ProcessName = 'Manager Process'
     ThreadInstantiationArr = []
     SystemVariablesObj = {
-        'AlgorithmId': 'bb_rsi_2020',
+        'AlgorithmId': None,
         'CurrentPrice': None,
         'CurrentAccountBalance': None,
         'CurrentPortfolioValue': None,
@@ -64,13 +64,14 @@ class ManagerBaseClass(ProcessBaseClass):
         AlgorithmNameArr = self.getAlgorithmNames()
         AlgorithmOptionsStr = ""
         for AlgorithmNameIndexInt in range(0, len(AlgorithmNameArr)):
-            AlgorithmOptionsStr += str(AlgorithmNameIndexInt+1) + ". " + AlgorithmNameArr[AlgorithmNameIndexInt] + '\n'
+            AlgorithmOptionsStr += str(AlgorithmNameIndexInt+1) + ". " + AlgorithmNameArr[AlgorithmNameIndexInt][0] + '\n'
         SelectedAlgoeithmNameInputStr = input("Please select an algorithm:\n" + AlgorithmOptionsStr + "Input: ")
 
         if 0 <= int(SelectedAlgoeithmNameInputStr) <= len(AlgorithmNameArr):
             self.AlgorithmConfigurationObj = \
-                self.getAlgorithmConfigurationObj(AlgorithmNameArr[int(SelectedAlgoeithmNameInputStr) - 1])
-
+                self.getAlgorithmConfigurationObj(AlgorithmNameArr[int(SelectedAlgoeithmNameInputStr) - 1][0])
+            self.SystemVariablesObj['AlgorithmId'] = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_ALGORITHM_NAME_INDEX]
+            self.SystemVariablesObj['TradingState'] = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_STATE_INDEX]
         self.setExchangeConnection()
 
     def requestProjectInitiationState(self):
@@ -147,7 +148,7 @@ class ManagerBaseClass(ProcessBaseClass):
                 print("Something went wrong when setting up Exchange connection for Binance: " + str(ErrorMessage))
                 SystemObj.exit()
         else:
-            print("Invalid selection")
+            print("Invalid Exchange Name Selection")
             SystemObj.exit()
 
         self.ExchangeConnectionObj.load_markets()
@@ -224,7 +225,7 @@ class ManagerBaseClass(ProcessBaseClass):
         AlgorithmNameArr = self.templateDatabaseRetriever(QueryStr, QueryData, "getAlgorithmNames")
         if AlgorithmNameArr is None:
             return
-        return AlgorithmNameArr[0]
+        return AlgorithmNameArr
 
     def getAlgorithmConfigurationObj(self, AlgorithmNameStr):
         # print("get Algorithm Configuration Object")

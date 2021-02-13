@@ -53,6 +53,8 @@ class ManagerClass(ManagerBaseClass):
 
     def initializeProcessObjects(self):
         # print("Initializing Process Objects")
+        AlgorithmNameStr = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_ALGORITHM_NAME_INDEX]
+
         IndicatorGenerationObj = IndicatorGenerationClass()
         IndicatorGenerationObj.setAlgorithmConfigurationObj(self.AlgorithmConfigurationObj)
         IndicatorGenerationObj.setExchangeConnectionObj(self.ExchangeConnectionObj)
@@ -90,14 +92,23 @@ class ManagerClass(ManagerBaseClass):
         TraderObj.setSystemVariables(self.SystemVariablesObj)
         TraderObj.setDatabaseConnectionDetailsObj(self.DatabaseConnectionDetails)
 
-        self.ThreadInstantiationArr = [
-            {'ProcessObj': IndicatorGenerationObj, 'IntervalInt': 300},
-            {'ProcessObj': RiskManagementObj, 'IntervalInt': 60},
-            {'ProcessObj': TraderObj, 'IntervalInt': 10},
-            {'ProcessObj': self, 'IntervalInt': 1}
-        ]
+        if AlgorithmNameStr == Constant.PRICE_DATA_GENERATION_BASE_VERSION:
+            self.ThreadInstantiationArr = [
+                {'ProcessObj': TraderObj, 'IntervalInt': 1},
+                {'ProcessObj': self, 'IntervalInt': 1}
+            ]
+        else:
+            self.ThreadInstantiationArr = [
+                {'ProcessObj': IndicatorGenerationObj, 'IntervalInt': 300},
+                {'ProcessObj': RiskManagementObj, 'IntervalInt': 60},
+                {'ProcessObj': TraderObj, 'IntervalInt': 10},
+                {'ProcessObj': self, 'IntervalInt': 1}
+            ]
 
     def initializeSystemData(self):
+        AlgorithmNameStr = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_ALGORITHM_NAME_INDEX]
+        if AlgorithmNameStr == Constant.PRICE_DATA_GENERATION_BASE_VERSION:
+            return
         # region Indicator Initialization
         CandleDurationInt = \
             int(self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_INDICATOR_CANDLE_DURATION_INDEX])

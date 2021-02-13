@@ -18,6 +18,8 @@ class TraderClass(TraderBaseClass):
             self.ema21AnalyzerAlgorithm()
         elif AlgorithmNameStr == Constant.BB_RSI_ANALYSER_BASE_VERSION:
             self.bbRsiTradingAlgorithm()
+        elif AlgorithmNameStr == Constant.PRICE_DATA_GENERATION_BASE_VERSION:
+            self.priceDataGeneration()
         else:
             print('Trading algorithm ' + AlgorithmNameStr + 'was not found')
             SystemObj.exit()
@@ -25,7 +27,6 @@ class TraderClass(TraderBaseClass):
     def bbRsiTradingAlgorithm(self):
         self.OpenOrderCountInt = self.countOpenOrders()
         self.OpenPositionCountInt = float(self.checkPosition())
-
         if self.OpenOrderCountInt is False or self.OpenPositionCountInt is False:
             self.createProcessExecutionLog(self.ProcessName, datetime.now(),
                                            "Process Update: Not executing trading functionality due to issues with"
@@ -114,3 +115,6 @@ class TraderClass(TraderBaseClass):
     def ema21AnalyzerAlgorithm(self):
 
         pass
+
+    def priceDataGeneration(self):
+        self.getCurrentPrice()
