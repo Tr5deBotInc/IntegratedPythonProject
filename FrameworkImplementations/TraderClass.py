@@ -35,38 +35,8 @@ class TraderClass(TraderBaseClass):
 
         # region Handling actions based on the trading state of the algorithm
         # trading state is managed by the risk management thread
-
-        if self.CurrentSystemVariables['TradingState'] == 'Market Halt':
-            if self.OpenPositionCountInt == 0 and self.OpenOrderCountInt > 0:
-                self.cancelAllOrders()
-                self.createProcessExecutionLog(self.ProcessName, datetime.now(),
-                                               "Process Update: Closing all orders on Market Halt trading state")
-                return
-            elif self.OpenOrderCountInt == 0 and self.OpenPositionCountInt == 0:
-                return
-        elif self.CurrentSystemVariables['TradingState'] == 'Market Dead Stop' or \
-                self.CurrentSystemVariables['TradingState'] == 'Manual Halt':
-            if self.OpenPositionCountInt != 0:
-                if self.OpenPositionCountInt > 0:
-                    self.placeMarketOrder('sell')
-                elif self.OpenPositionCountInt < 0:
-                    self.placeMarketOrder('buy')
-
-                self.createProcessExecutionLog(self.ProcessName, datetime.now(),
-                                               "Process Update: Creating market orders on open position due to "
-                                               + self.CurrentSystemVariables['TradingState'] + " trading state")
-                if self.OpenOrderCountInt > 0:
-                    self.cancelAllOrders()
-                    self.createProcessExecutionLog(self.ProcessName, datetime.now(),
-                                                   "Process Update: Closing all orders due to "
-                                                   + self.CurrentSystemVariables['TradingState'] + " trading state")
+        if not self.checkTradingState():
             return
-        elif self.CurrentSystemVariables['TradingState'] is None:
-            # In case the algorithm configuration variables are not set yet, we do not execute trading functionality
-            self.createProcessExecutionLog(self.ProcessName, datetime.now(),
-                                           "Process Update: Algorithm trading state not set")
-            return
-
         # endregion
 
         # region Actual Algorithm
@@ -113,6 +83,20 @@ class TraderClass(TraderBaseClass):
         # endregion
 
     def ema21AnalyzerAlgorithm(self):
+        if 'LastEmaRetestCount' not in self.CustomVariables:
+            # setattr(self.CustomVariables, 'LastEmaRetestCount', self.IndicatorsObj['EMA_RETEST']['retest_candle_count'])
+            self.CustomVariables['LastEmaRetestCount'] = self.IndicatorsObj['EMA_RETEST']['retest_candle_count']
+            print(self.CustomVariables['LastEmaRetestCount'])
+
+        if self.CustomVariables['LastEmaRetestCount'] != self.IndicatorsObj['EMA_RETEST']['retest_candle_count']:
+            self.CustomVariables['LastEmaRetestCount'] = self.IndicatorsObj['EMA_RETEST']['retest_candle_count']
+            print(self.CustomVariables['LastEmaRetestCount'])
+
+        # region Handling actions based on the trading state of the algorithm
+        # trading state is managed by the risk management thread
+        if not self.checkTradingState():
+            return
+        # endregion
 
         pass
 
