@@ -18,7 +18,7 @@ class IndicatorGenerationClass(IndicatorGenerationBaseClass):
         self.updateCandleArr()
         SelectedAlgorithmNameStr = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_ALGORITHM_NAME_INDEX]
 
-        if SelectedAlgorithmNameStr == Constant.BB_RSI_ANALYSER_BASE_VERSION:
+        if SelectedAlgorithmNameStr == Constant.BB_RSI_ANALYSER_BASE_VERSION or SelectedAlgorithmNameStr == Constant.BB_RSI_ANALYSER_15_MINUTE_CANDLES:
             self.updateIndicatorsForBbRsiAlgortihm()
         elif SelectedAlgorithmNameStr == Constant.EMA_21_ANALYSER_BASE_VERSION:
             self.updateIndicatorsForEma21AnalyserAlgorithm()
