@@ -161,17 +161,16 @@ class ManagerBaseClass(ProcessBaseClass):
 
     # region Functions used to retrieve information from the exchange
     def getCurrentPrice(self):
+        TradingPairSymbolStr = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
         try:
-            self.SystemVariablesObj['CurrentPrice'] = self.ExchangeConnectionObj.fetch_ticker(
-                        self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
-            )['bid']
+            self.SystemVariablesObj['CurrentPrice'] = self.ExchangeConnectionObj.fetch_ticker(TradingPairSymbolStr)['bid']
         except Exception as ErrorMessage:
             # Please create a log table and a log function for exchange related retrievals.
             # We will only log errors in this table
             self.createExchangeInteractionLog(
                 self.ProcessName,
                 datetime.now(),
-                " self.ExchangeConnectionObj.fetch_ticker('BTC/USDT')['bid']", ErrorMessage
+                " self.ExchangeConnectionObj.fetch_ticker(" + TradingPairSymbolStr + ")['bid']", ErrorMessage
             )
 
     def getCurrentBalance(self):

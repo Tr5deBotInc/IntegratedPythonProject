@@ -16,12 +16,12 @@ class TraderClass(TraderBaseClass):
 
         if AlgorithmNameStr == Constant.EMA_21_ANALYSER_BASE_VERSION:
             self.ema21AnalyzerAlgorithm()
-        elif AlgorithmNameStr == Constant.BB_RSI_ANALYSER_BASE_VERSION:
+        elif AlgorithmNameStr == Constant.BB_RSI_ANALYSER_BASE_VERSION or AlgorithmNameStr == Constant.BB_RSI_ANALYSER_15_MINUTE_CANDLES:
             self.bbRsiTradingAlgorithm()
         elif AlgorithmNameStr == Constant.PRICE_DATA_GENERATION_BASE_VERSION:
             self.priceDataGeneration()
         else:
-            print('Trading algorithm ' + AlgorithmNameStr + 'was not found')
+            print('Trading algorithm ' + AlgorithmNameStr + ' was not found')
             SystemObj.exit()
 
     def bbRsiTradingAlgorithm(self):
