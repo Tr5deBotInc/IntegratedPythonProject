@@ -14,6 +14,7 @@ class TraderBaseClass(ProcessBaseClass):
     OpenPositionCountInt = 0
     CurrentOrderArr = []
     MarginTradingCurrency = 'BTC'
+    CustomVariables = {}
 
     def __init__(self):
         # print("Trader Base Class Constructor")
@@ -406,3 +407,37 @@ class TraderBaseClass(ProcessBaseClass):
                 datetime.now(),
                 "WebSocket get_ticket()['mid]", ErrorMessage
             )
+
+    def checkTradingState(self):
+        if self.CurrentSystemVariables['TradingState'] == 'Market Halt':
+            if self.OpenPositionCountInt == 0 and self.OpenOrderCountInt > 0:
+                self.cancelAllOrders()
+                self.createProcessExecutionLog(self.ProcessName, datetime.now(),
+                                               "Process Update: Closing all orders on Market Halt trading state")
+                return False
+            elif self.OpenOrderCountInt == 0 and self.OpenPositionCountInt == 0:
+                return False
+        elif self.CurrentSystemVariables['TradingState'] == 'Market Dead Stop' or \
+                self.CurrentSystemVariables['TradingState'] == 'Manual Halt':
+            if self.OpenPositionCountInt != 0:
+                if self.OpenPositionCountInt > 0:
+                    self.placeMarketOrder('sell')
+                elif self.OpenPositionCountInt < 0:
+                    self.placeMarketOrder('buy')
+
+                self.createProcessExecutionLog(self.ProcessName, datetime.now(),
+                                               "Process Update: Creating market orders on open position due to "
+                                               + self.CurrentSystemVariables['TradingState'] + " trading state")
+                if self.OpenOrderCountInt > 0:
+                    self.cancelAllOrders()
+                    self.createProcessExecutionLog(self.ProcessName, datetime.now(),
+                                                   "Process Update: Closing all orders due to "
+                                                   + self.CurrentSystemVariables['TradingState'] + " trading state")
+            return False
+        elif self.CurrentSystemVariables['TradingState'] is None:
+            # In case the algorithm configuration variables are not set yet, we do not execute trading functionality
+            self.createProcessExecutionLog(self.ProcessName, datetime.now(),
+                                           "Process Update: Algorithm trading state not set")
+            return False
+
+        return True

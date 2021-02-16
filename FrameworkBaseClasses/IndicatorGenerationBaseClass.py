@@ -148,7 +148,7 @@ class IndicatorGenerationBaseClass(ProcessBaseClass):
 
         if LatestCandleObj['open'] > LatestEmaValue and LatestCandleObj['close'] > LatestEmaValue:
             CurrentMarketPlacementStr = 'above'
-        elif LatestCandleObj['open'] < LatestEmaValue and LatestCandleObj['close'] < LatestCandleObj:
+        elif LatestCandleObj['open'] < LatestEmaValue and LatestCandleObj['close'] < LatestEmaValue:
             CurrentMarketPlacementStr = 'below'
         else:
             CurrentMarketPlacementStr = 'all over'

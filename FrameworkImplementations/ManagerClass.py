@@ -40,14 +40,7 @@ class ManagerClass(ManagerBaseClass):
         super().__init__()
         self.initializeProcessObjects()
 
-        # region Making sure system starts at the beginning of 5 minutes
-        # now = datetime.now()
-        # next_run = now.replace(minute=int(now.minute / 5) * 5, second=0, microsecond=0) + timedelta(minutes=5)
-        # sleep_time = (next_run - now).total_seconds()
-        # print(sleep_time)
-        # time.sleep(sleep_time)
-        # print(datetime.now())
-        # endregion
+        self.initiateStartingTimer()
 
         self.startProcessThreading()
 
@@ -174,3 +167,12 @@ class ManagerClass(ManagerBaseClass):
         # this will be changed to a function that logs the one second price to the database
         self.getCurrentPrice()
         self.getCurrentBalance()
+
+    def initiateStartingTimer(self):
+        # region Making sure system starts at the beginning of 5 minutes
+        WhenToStartInt = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_STARTING_MINUTE_MULTIPLE]
+        now = datetime.now()
+        next_run = now.replace(minute=int(now.minute / WhenToStartInt) * WhenToStartInt, second=0, microsecond=0) + timedelta(minutes=WhenToStartInt)
+        sleep_time = (next_run - now).total_seconds()
+        time.sleep(sleep_time)
+        # endregion
