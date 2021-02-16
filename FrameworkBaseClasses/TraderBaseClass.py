@@ -394,8 +394,9 @@ class TraderBaseClass(ProcessBaseClass):
             return CurrentPositionObj[0]['currentQty']
 
     def getCurrentPrice(self):
+        TradingPairSymbolStr = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
         try:
-            self.CurrentSystemVariables['CurrentPrice'] = self.ExchangeConnectionObj.fetch_ticker('BTC/USDT')['bid']
+            self.CurrentSystemVariables['CurrentPrice'] = self.ExchangeConnectionObj.fetch_ticker(TradingPairSymbolStr)['bid']
             self.createPriceLogEntry(datetime.now(), self.CurrentSystemVariables['CurrentPrice'])
         except Exception as ErrorMessage:
             # Please create a log table and a log function for exchange related retrievals.
