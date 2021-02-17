@@ -124,7 +124,7 @@ class IndicatorGenerationBaseClass(ProcessBaseClass):
 
     def updateEmaIndicator(self):
         FrameCountInt = int(self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_INDICATOR_FRAME_COUNT_INDEX])
-        EmaSmoothingFactorFloat = 2
+        EmaSmoothingFactorFloat = float(self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_EMA_SMOOTHING_FACTOR_INDEX])
         if self.IndicatorsObj['EMA']['value'] is None:
             PreviousExponentialMovingAverageFloat = ProjectFunctions.getSimpleMovingAverage(self.CandleArr['FiveMinuteCandles'][0:len(self.CandleArr['FiveMinuteCandles'])-2])['value']
         else:

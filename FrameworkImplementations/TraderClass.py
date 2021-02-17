@@ -86,11 +86,15 @@ class TraderClass(TraderBaseClass):
         if 'LastEmaRetestCount' not in self.CustomVariables:
             # setattr(self.CustomVariables, 'LastEmaRetestCount', self.IndicatorsObj['EMA_RETEST']['retest_candle_count'])
             self.CustomVariables['LastEmaRetestCount'] = self.IndicatorsObj['EMA_RETEST']['retest_candle_count']
-            print(self.CustomVariables['LastEmaRetestCount'])
+
+        if 'StandardDeviation' not in self.CustomVariables:
+            self.CustomVariables['StandardDeviation'] = 1
 
         if self.CustomVariables['LastEmaRetestCount'] != self.IndicatorsObj['EMA_RETEST']['retest_candle_count']:
             self.CustomVariables['LastEmaRetestCount'] = self.IndicatorsObj['EMA_RETEST']['retest_candle_count']
-            print(self.CustomVariables['LastEmaRetestCount'])
+            if self.CustomVariables['LastEmaRetestCount'] < 21:
+                return
+
 
         # region Handling actions based on the trading state of the algorithm
         # trading state is managed by the risk management thread
