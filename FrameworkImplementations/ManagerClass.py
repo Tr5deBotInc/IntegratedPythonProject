@@ -107,7 +107,6 @@ class ManagerClass(ManagerBaseClass):
             int(self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_INDICATOR_CANDLE_DURATION_INDEX])
         FrameCountInt = \
             int(self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_INDICATOR_FRAME_COUNT_INDEX])
-        EmaSmoothingFactor = 2
 
         BollingerBandUsedBool = False
         if self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_BB_STANDARD_DEVIATION_INDEX] is not None:
@@ -170,7 +169,11 @@ class ManagerClass(ManagerBaseClass):
 
     def initiateStartingTimer(self):
         # region Making sure system starts at the beginning of 5 minutes
-        WhenToStartInt = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_STARTING_MINUTE_MULTIPLE]
+        WhenToStartInt = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_STARTING_MINUTE_MULTIPLE_INDEX]
+
+        if WhenToStartInt is None:
+            return
+
         now = datetime.now()
         next_run = now.replace(minute=int(now.minute / WhenToStartInt) * WhenToStartInt, second=0, microsecond=0) + timedelta(minutes=WhenToStartInt)
         sleep_time = (next_run - now).total_seconds()
