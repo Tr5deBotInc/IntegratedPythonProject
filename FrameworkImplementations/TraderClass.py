@@ -84,6 +84,12 @@ class TraderClass(TraderBaseClass):
         # endregion
 
     def ema21AnalyzerAlgorithm(self):
+        # region Handling actions based on the trading state of the algorithm
+        # trading state is managed by the risk management thread
+        if not self.checkTradingState():
+            return
+        # endregion
+
         if self.IndicatorsObj['EMA_RETEST']['retest_candle_count'] is None:
             return
         if 'LastEmaRetestCount' not in self.CustomVariables:
@@ -95,6 +101,7 @@ class TraderClass(TraderBaseClass):
         self.OpenOrderCountInt = self.countOpenOrders()
         self.OpenPositionCountInt = float(self.checkPosition())
         PositionSizeInt = format(self.getOrderQuantity(), '.4f')
+        InsteadOfWhileLoopArr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
         if self.OpenPositionCountInt != 0 and len(self.CustomVariables['OpenPositions']) == 0:
             if self.OpenPositionCountInt > 0:
@@ -102,95 +109,90 @@ class TraderClass(TraderBaseClass):
             else:
                 self.CustomVariables['OpenPositions'].append({'OrderSide': 'sell', 'PositionPrice': self.CurrentSystemVariables['CurrentPrice'], 'PositionSize': PositionSizeInt, 'Status': 'New', 'RetestCount': self.CustomVariables['LastEmaRetestCount']})
 
-        for i in range(0, len(self.CustomVariables['OpenPositions'])):
-            if self.CustomVariables['OpenPositions'][i]['OrderSide'] == 'buy' and self.IndicatorsObj['EMA']['value'] <= self.CustomVariables['OpenPositions'][i]['PositionPrice'] and self.CustomVariables['OpenPositions'][i]['Status'] == 'New':
-                if self.placeMarketOrder('sell', self.CustomVariables['OpenPositions'][i]['PositionSize']):
-                    self.CustomVariables['OpenPositions'][i]['Status'] = 'Closed'
-
         if self.CustomVariables['LastEmaRetestCount'] != self.IndicatorsObj['EMA_RETEST']['retest_candle_count']:
             self.CustomVariables['LastEmaRetestCount'] = self.IndicatorsObj['EMA_RETEST']['retest_candle_count']
             if self.CustomVariables['LastEmaRetestCount'] < 2:
 
                 if len(self.CustomVariables['OpenPositions']) > 0:
                     self.CustomVariables['OpenPositions'] = []
+                    print('clearing all stored positions')
 
                 if self.OpenOrderCountInt > 0:
                     self.cancelAllOrders()
 
                 if self.OpenPositionCountInt != 0:
+                    print('Marketing all open positions because opened too early')
                     if self.OpenPositionCountInt > 0:
                         self.placeMarketOrder('sell')
                     elif self.OpenPositionCountInt < 0:
                         self.placeMarketOrder('buy')
                 return
 
+            for i in range(0, len(self.CustomVariables['OpenPositions'])):
+                if self.CustomVariables['OpenPositions'][i]['OrderSide'] == 'buy' and self.IndicatorsObj['EMA'][
+                    'value'] <= self.CustomVariables['OpenPositions'][i]['PositionPrice'] and \
+                        self.CustomVariables['OpenPositions'][i]['Status'] == 'New':
+                    if self.placeMarketOrder('sell', self.CustomVariables['OpenPositions'][i]['PositionSize']):
+                        self.CustomVariables['OpenPositions'][i]['Status'] = 'Closed'
+                        print('Marketed Open Position Sized: ' + str(
+                            self.CustomVariables['OpenPositions'][i]['PositionSize']))
+                        print('Market Trade Side: ' + 'sell')
+
+                elif self.CustomVariables['OpenPositions'][i]['OrderSide'] == 'sell' and self.IndicatorsObj['EMA'][
+                    'value'] >= self.CustomVariables['OpenPositions'][i]['PositionPrice'] and \
+                        self.CustomVariables['OpenPositions'][i]['Status'] == 'New':
+                    if self.placeMarketOrder('buy', self.CustomVariables['OpenPositions'][i]['PositionSize']):
+                        self.CustomVariables['OpenPositions'][i]['Status'] = 'Closed'
+                        print('Marketed Open Position Sized: ' + str(
+                            self.CustomVariables['OpenPositions'][i]['PositionSize']))
+                        print('Market Trade Side: ' + 'buy')
+
+            if self.OpenPositionCountInt != 0:
+                self.cancelAllOrders()
+                if self.OpenPositionCountInt > 0:
+                    self.placeClosingOrder('sell')
+                elif self.OpenPositionCountInt < 0:
+                    self.placeClosingOrder('buy')
+
         OpenedPositionsInt = len(self.CustomVariables['OpenPositions'])
-        print('EMA Retest Count: ' + str(self.CustomVariables['LastEmaRetestCount']))
-        print('Open Positions: ' + str(OpenedPositionsInt))
-        print(self.CustomVariables['OpenPositions'])
         if OpenedPositionsInt > 0 and self.CustomVariables['OpenPositions'][OpenedPositionsInt-1]['RetestCount'] == self.CustomVariables['LastEmaRetestCount']:
             return
 
-        # print("latest Ema Retest Count: " + str(self.CustomVariables['LastEmaRetestCount']))
-        # print("BB: " + str(self.IndicatorsObj['BB']))
-        # print("Current Price: " + str(self.CurrentSystemVariables['CurrentPrice']))
-        # print("Algorithm Position Size: " + str(PositionSizeInt))
-
         if self.CurrentSystemVariables['CurrentPrice'] > self.IndicatorsObj['BB']['upper']:
-            self.cancelAllOrders()
-            self.OpenOrderCountInt = self.countOpenOrders()
-            print('Entering Order Count Loop')
-            while self.OpenOrderCountInt > 0:
-                self.OpenOrderCountInt = self.countOpenOrders()
-                sleep(0.01)
-
-            print('Exited Order Count Loop')
-            if self.placeMarketOrder('sell', PositionSizeInt):
-                self.CustomVariables['OpenPositions'].append({'OrderSide': 'sell', 'PositionPrice': self.CurrentSystemVariables['CurrentPrice'], 'PositionSize': PositionSizeInt, 'Status': 'New', 'RetestCount': self.CustomVariables['LastEmaRetestCount']})
-            self.OpenPositionCountInt = float(self.checkPosition())
-
-            print('Entering Open Position Loop')
-            while self.OpenPositionCountInt == 0:
-                self.OpenPositionCountInt = float(self.checkPosition())
-                sleep(0.01)
-            print('Exiting Open Position Loop')
-
-            print('New Position Size: ' + str(self.OpenPositionCountInt))
-            self.placeClosingOrder('buy')
+            MarketOrderSideStr = 'sell'
+            ClosingOrderSideStr = 'buy'
         elif self.CurrentSystemVariables['CurrentPrice'] < self.IndicatorsObj['BB']['lower']:
-            self.cancelAllOrders()
-            self.OpenOrderCountInt = self.countOpenOrders()
-            print('Entering Order Count Loop')
-            while self.OpenOrderCountInt > 0:
-                self.OpenOrderCountInt = self.countOpenOrders()
-                sleep(0.01)
-
-            print('Exited Order Count Loop')
-            if self.placeMarketOrder('buy', PositionSizeInt):
-                self.CustomVariables['OpenPositions'].append({'OrderSide': 'buy', 'PositionPrice': self.CurrentSystemVariables['CurrentPrice'], 'PositionSize': PositionSizeInt, 'Status': 'New', 'RetestCount': self.CustomVariables['LastEmaRetestCount']})
-
-            self.OpenPositionCountInt = float(self.checkPosition())
-            print('Entering Open Position Loop')
-            while self.OpenPositionCountInt == 0:
-                self.OpenPositionCountInt = float(self.checkPosition())
-                sleep(0.01)
-            print('Exiting Open Position Loop')
-
-            print('New Position Size: ' + str(self.OpenPositionCountInt))
-            self.placeClosingOrder('sell')
-        elif self.OpenPositionCountInt != 0:
-            if self.OpenPositionCountInt > 0:
-                self.placeClosingOrder('sell')
-            elif self.OpenPositionCountInt < 0:
-                self.placeClosingOrder('buy')
-
-        # region Handling actions based on the trading state of the algorithm
-        # trading state is managed by the risk management thread
-        if not self.checkTradingState():
+            MarketOrderSideStr = 'buy'
+            ClosingOrderSideStr = 'sell'
+        else:
             return
-        # endregion
 
-        pass
+        self.cancelAllOrders()
+        self.OpenOrderCountInt = self.countOpenOrders()
+        for i in InsteadOfWhileLoopArr:
+            if self.OpenOrderCountInt == 0:
+                break
+            print('Order Count Loop: ' + str(i))
+            sleep(0.01)
+            self.OpenOrderCountInt = self.countOpenOrders()
+
+        if self.placeMarketOrder(MarketOrderSideStr, PositionSizeInt):
+            self.CustomVariables['OpenPositions'].append(
+                {'OrderSide': MarketOrderSideStr, 'PositionPrice': self.CurrentSystemVariables['CurrentPrice'],
+                 'PositionSize': PositionSizeInt, 'Status': 'New',
+                 'RetestCount': self.CustomVariables['LastEmaRetestCount']})
+
+        self.OpenPositionCountInt = float(self.checkPosition())
+        for i in InsteadOfWhileLoopArr:
+            if self.OpenPositionCountInt != 0:
+                break
+            print('Open Position Loop: ' + str(i))
+            sleep(0.01)
+            self.OpenPositionCountInt = float(self.checkPosition())
+
+        print('New Position Size: ' + str(self.OpenPositionCountInt))
+        print('Market Order Side: ' + MarketOrderSideStr)
+        self.placeClosingOrder(ClosingOrderSideStr)
 
     def priceDataGeneration(self):
         self.getCurrentPrice()
