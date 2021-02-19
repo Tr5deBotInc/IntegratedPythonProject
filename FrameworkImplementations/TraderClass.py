@@ -188,6 +188,7 @@ class TraderClass(TraderBaseClass):
             sleep(0.01)
             self.OpenPositionCountInt = float(self.checkPosition())
 
+        self.cancelAllOrders()
         self.placeClosingOrder(ClosingOrderSideStr)
 
         print('New Position Size: ' + str(self.OpenPositionCountInt))

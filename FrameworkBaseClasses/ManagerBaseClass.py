@@ -51,7 +51,9 @@ class ManagerBaseClass(ProcessBaseClass):
                                                "Process Failed: " + str(ErrorMessage) + "\n" + traceback.format_exc())
 
             if time.time() - StartingTimeInt < IntervalInt:
-                time.sleep(IntervalInt - (time.time() - StartingTimeInt))
+                SleepingTimeFloat = IntervalInt - (time.time() - StartingTimeInt)
+                if SleepingTimeFloat > 0:
+                    time.sleep(SleepingTimeFloat)
                 StartingTimeInt = time.time()
             else:
                 self.createProcessExecutionLog(
