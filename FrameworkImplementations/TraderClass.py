@@ -111,7 +111,7 @@ class TraderClass(TraderBaseClass):
 
         if self.CustomVariables['LastEmaRetestCount'] != self.IndicatorsObj['EMA_RETEST']['retest_candle_count']:
             self.CustomVariables['LastEmaRetestCount'] = self.IndicatorsObj['EMA_RETEST']['retest_candle_count']
-            if self.CustomVariables['LastEmaRetestCount'] < 2:
+            if self.CustomVariables['LastEmaRetestCount'] < 21:
 
                 if len(self.CustomVariables['OpenPositions']) > 0:
                     self.CustomVariables['OpenPositions'] = []
@@ -172,7 +172,6 @@ class TraderClass(TraderBaseClass):
         for i in InsteadOfWhileLoopArr:
             if self.OpenOrderCountInt == 0:
                 break
-            print('Order Count Loop: ' + str(i))
             sleep(0.01)
             self.OpenOrderCountInt = self.countOpenOrders()
 
@@ -186,13 +185,14 @@ class TraderClass(TraderBaseClass):
         for i in InsteadOfWhileLoopArr:
             if self.OpenPositionCountInt != 0:
                 break
-            print('Open Position Loop: ' + str(i))
             sleep(0.01)
             self.OpenPositionCountInt = float(self.checkPosition())
 
+        self.placeClosingOrder(ClosingOrderSideStr)
+
         print('New Position Size: ' + str(self.OpenPositionCountInt))
         print('Market Order Side: ' + MarketOrderSideStr)
-        self.placeClosingOrder(ClosingOrderSideStr)
+        print('Retest Count: ' + str(self.CustomVariables['LastEmaRetestCount']))
 
     def priceDataGeneration(self):
         self.getCurrentPrice()
