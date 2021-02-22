@@ -111,22 +111,6 @@ class TraderClass(TraderBaseClass):
 
         if self.CustomVariables['LastEmaRetestCount'] != self.IndicatorsObj['EMA_RETEST']['retest_candle_count']:
             self.CustomVariables['LastEmaRetestCount'] = self.IndicatorsObj['EMA_RETEST']['retest_candle_count']
-            if self.CustomVariables['LastEmaRetestCount'] < 21:
-
-                if len(self.CustomVariables['OpenPositions']) > 0:
-                    self.CustomVariables['OpenPositions'] = []
-                    print('clearing all stored positions')
-
-                if self.OpenOrderCountInt > 0:
-                    self.cancelAllOrders()
-
-                if self.OpenPositionCountInt != 0:
-                    print('Marketing all open positions because opened too early')
-                    if self.OpenPositionCountInt > 0:
-                        self.placeMarketOrder('sell')
-                    elif self.OpenPositionCountInt < 0:
-                        self.placeMarketOrder('buy')
-                return
 
             for i in range(0, len(self.CustomVariables['OpenPositions'])):
                 if self.CustomVariables['OpenPositions'][i]['OrderSide'] == 'buy' and self.IndicatorsObj['EMA'][
@@ -153,6 +137,23 @@ class TraderClass(TraderBaseClass):
                     self.placeClosingOrder('sell')
                 elif self.OpenPositionCountInt < 0:
                     self.placeClosingOrder('buy')
+
+        if self.CustomVariables['LastEmaRetestCount'] < 21:
+
+            if len(self.CustomVariables['OpenPositions']) > 0:
+                self.CustomVariables['OpenPositions'] = []
+                print('clearing all stored positions')
+
+            if self.OpenOrderCountInt > 0:
+                self.cancelAllOrders()
+
+            if self.OpenPositionCountInt != 0:
+                print('Marketing all open positions because opened too early')
+                if self.OpenPositionCountInt > 0:
+                    self.placeMarketOrder('sell')
+                elif self.OpenPositionCountInt < 0:
+                    self.placeMarketOrder('buy')
+            return
 
         OpenedPositionsInt = len(self.CustomVariables['OpenPositions'])
         if OpenedPositionsInt > 0 and self.CustomVariables['OpenPositions'][OpenedPositionsInt-1]['RetestCount'] == self.CustomVariables['LastEmaRetestCount']:
