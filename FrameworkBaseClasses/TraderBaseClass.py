@@ -328,8 +328,6 @@ class TraderBaseClass(ProcessBaseClass):
     def placeMarketOrder(self, OrderSideStr, QuantityInt=None):
         if QuantityInt is None:
             QuantityInt = abs(self.OpenPositionCountInt)
-        print('Market Order: ' + OrderSideStr)
-        print('Order Size: ' + str(QuantityInt))
         try:
             if self.ExchangeConnectionDetails['ExchangeName'] == Constant.BINANCE_EXCHANGE_ID:
                 self.ExchangeConnectionObj.sapi_post_margin_order({
@@ -427,6 +425,8 @@ class TraderBaseClass(ProcessBaseClass):
                 return False
         elif self.CurrentSystemVariables['TradingState'] == 'Market Dead Stop' or \
                 self.CurrentSystemVariables['TradingState'] == 'Manual Halt':
+            if self.OpenOrderCountInt > 0:
+                self.cancelAllOrders()
             if self.OpenPositionCountInt != 0:
                 if self.OpenPositionCountInt > 0:
                     self.placeMarketOrder('sell')

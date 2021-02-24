@@ -1,6 +1,7 @@
 from FrameworkBaseClasses.ProcessBaseClass import ProcessBaseClass
 from assets import environments as EnvironmentDetails
 from assets import constants as Constant
+from assets import ProjectFunctions
 import sys as SystemObj
 
 import ccxt
@@ -67,11 +68,11 @@ class ManagerBaseClass(ProcessBaseClass):
         AlgorithmOptionsStr = ""
         for AlgorithmNameIndexInt in range(0, len(AlgorithmNameArr)):
             AlgorithmOptionsStr += str(AlgorithmNameIndexInt+1) + ". " + AlgorithmNameArr[AlgorithmNameIndexInt][0] + '\n'
-        SelectedAlgoeithmNameInputStr = input("Please select an algorithm:\n" + AlgorithmOptionsStr + "Input: ")
+        SelectedAlgorithmNameInputStr = input("Please select an algorithm:\n" + AlgorithmOptionsStr + "Input: ")
 
-        if 0 <= int(SelectedAlgoeithmNameInputStr) <= len(AlgorithmNameArr):
+        if 0 <= int(SelectedAlgorithmNameInputStr) <= len(AlgorithmNameArr):
             self.AlgorithmConfigurationObj = \
-                self.getAlgorithmConfigurationObj(AlgorithmNameArr[int(SelectedAlgoeithmNameInputStr) - 1][0])
+                self.getAlgorithmConfigurationObj(AlgorithmNameArr[int(SelectedAlgorithmNameInputStr) - 1][0])
             self.SystemVariablesObj['AlgorithmId'] = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_ALGORITHM_NAME_INDEX]
             self.SystemVariablesObj['TradingState'] = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_STATE_INDEX]
         self.setExchangeConnection()
@@ -213,6 +214,48 @@ class ManagerBaseClass(ProcessBaseClass):
         elif self.ExchangeConnectionDetails['ExchangeName'] == Constant.BITMEX_EXCHANGE_ID:
             self.SystemVariablesObj['CurrentAccountBalance'] = BalanceObj['free']['BTC']
             self.SystemVariablesObj['CurrentPortfolioValue'] = BalanceObj['total']['BTC']
+
+    def getCurrentPosition(self):
+        TradingPairSymbolStr = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
+        PairSplitIndexInt = TradingPairSymbolStr.find('/')
+        MarginTradingCurrencyStr = TradingPairSymbolStr[0:PairSplitIndexInt]
+        try:
+            if self.ExchangeConnectionDetails['ExchangeName'] == Constant.BINANCE_EXCHANGE_ID:
+                BinanceAssetObjArr = self.ExchangeConnectionObj.fetchBalance()['info']['userAssets']
+                for BinanceAssetObj in BinanceAssetObjArr:
+                    if BinanceAssetObj['asset'] == MarginTradingCurrencyStr:
+                        if float(BinanceAssetObj['netAsset']) > 0.00019:
+                            self.SystemVariablesObj['CurrentAccountPositionSize'] = ProjectFunctions.truncateFloat(abs(float(BinanceAssetObj['netAsset'])), 4)
+                        elif float(BinanceAssetObj['netAsset']) < -0.00019:
+                            self.SystemVariablesObj['CurrentAccountPositionSize'] = ProjectFunctions.truncateFloat(-abs(float(BinanceAssetObj['netAsset'])), 4)
+                        else:
+                            self.SystemVariablesObj['CurrentAccountPositionSize'] = 0
+            else:
+                CurrentPositionObj = self.ExchangeConnectionObj.private_get_position()
+                self.SystemVariablesObj['CurrentAccountPositionSize'] = CurrentPositionObj[0]['currentQty']
+        except ccxt.NetworkError as ErrorMessage:
+            self.createExchangeInteractionLog(
+                self.ProcessName,
+                datetime.now(),
+                "private_get_position()",
+                "NetworkError: " + str(ErrorMessage)
+            )
+        except ccxt.ExchangeError as ErrorMessage:
+            self.createExchangeInteractionLog(
+                self.ProcessName,
+                datetime.now(),
+                "private_get_position()",
+                "ExchangeError: " + str(ErrorMessage)
+            )
+        except Exception as ErrorMessage:
+            self.createExchangeInteractionLog(
+                self.ProcessName,
+                datetime.now(),
+                "private_get_position()",
+                "OtherError: " + str(ErrorMessage)
+            )
+        return False
+        pass
     # endregion
 
     # region Function used to retrieve algorithm configurations from database

@@ -19,6 +19,8 @@ class TraderClass(TraderBaseClass):
             self.ema21AnalyzerAlgorithm()
         elif AlgorithmNameStr == Constant.BB_RSI_ANALYSER_BASE_VERSION or AlgorithmNameStr == Constant.BB_RSI_ANALYSER_15_MINUTE_CANDLES:
             self.bbRsiTradingAlgorithm()
+        elif AlgorithmNameStr == Constant.BB_RSI_ANALYSER_15_MINUTE_CANDLES_IMPROVED:
+            self.bbRsiTradingAlgorithmImproved()
         elif AlgorithmNameStr == Constant.PRICE_DATA_GENERATION_BASE_VERSION:
             self.priceDataGeneration()
         else:
@@ -26,6 +28,64 @@ class TraderClass(TraderBaseClass):
             SystemObj.exit()
 
     def bbRsiTradingAlgorithm(self):
+        self.OpenOrderCountInt = self.countOpenOrders()
+        self.OpenPositionCountInt = float(self.checkPosition())
+        if self.OpenOrderCountInt is False or self.OpenPositionCountInt is False:
+            self.createProcessExecutionLog(self.ProcessName, datetime.now(),
+                                           "Process Update: Not executing trading functionality due to issues with"
+                                           " getting Order Count or Position Count")
+            return
+
+        # region Handling actions based on the trading state of the algorithm
+        # trading state is managed by the risk management thread
+        if not self.checkTradingState():
+            return
+        # endregion
+
+        # region Actual Algorithm
+        self.createProcessExecutionLog(self.ProcessName, datetime.now(),
+                                       "Process Update: Got to the start of the actual Algorithm. Open Position Count: "
+                                       + str(self.OpenPositionCountInt) + ". Open Order Count: " + str(
+                                           self.OpenOrderCountInt))
+
+        self.createProcessExecutionLog(self.ProcessName, datetime.now(),
+                                       "Indicators: " + str(self.IndicatorsObj))
+        if self.OpenOrderCountInt < 1:
+            if self.OpenPositionCountInt > 0:
+                self.placeClosingOrder('sell')
+                return
+            if self.OpenPositionCountInt < 0:
+                self.placeClosingOrder('buy')
+                return
+            self.placeOpeningOrders()
+            return
+
+        for CurrentOrder in self.CurrentOrderArr:
+            if self.OpenPositionCountInt < 0:
+                if CurrentOrder['side'] != 'buy' or CurrentOrder['price'] != round(self.IndicatorsObj['SMA']['value']):
+                    if self.cancelAllOrders() is True:
+                        self.placeClosingOrder('buy')
+                    return
+            elif self.OpenPositionCountInt > 0:
+                if CurrentOrder['side'] != 'sell' or CurrentOrder['price'] != round(self.IndicatorsObj['SMA']['value']):
+                    if self.cancelAllOrders() is True:
+                        self.placeClosingOrder('sell')
+                    return
+            elif CurrentOrder['side'] == 'sell':
+                UpperLimitArr = [self.IndicatorsObj['BB']['upper'], self.IndicatorsObj['RSI']['upper']]
+                if CurrentOrder['price'] != round(max(UpperLimitArr)):
+                    if self.cancelAllOrders() is True:
+                        self.placeOpeningOrders()
+                    return
+            elif CurrentOrder['side'] == 'buy':
+                LowerLimitArr = [self.IndicatorsObj['BB']['lower'], self.IndicatorsObj['RSI']['lower']]
+                if CurrentOrder['price'] != round(min(LowerLimitArr)):
+                    if self.cancelAllOrders() is True:
+                        self.placeOpeningOrders()
+                    return
+        # endregion
+
+    def bbRsiTradingAlgorithmImproved(self):
         self.OpenOrderCountInt = self.countOpenOrders()
         self.OpenPositionCountInt = float(self.checkPosition())
         if self.OpenOrderCountInt is False or self.OpenPositionCountInt is False:

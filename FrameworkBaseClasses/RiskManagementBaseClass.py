@@ -12,6 +12,7 @@ class RiskManagementBaseClass(ProcessBaseClass):
         self.ObjectTypeValidationArr = {
             'SystemVariables': ['AlgorithmId', 'CurrentPrice', 'CurrentAccountBalance', 'CurrentPortfolioValue', 'TradingState'],
             'DatabaseDetails': ['ServerName', 'DatabaseName', 'UserName', 'Password'],
+            'Indicators': ['BB', 'RSI', 'SMA', 'EMA', 'EMA_RETEST', 'TimeStamp', 'COC'],
             'ExchangeDetails': ['ExchangeName', 'ApiKey', 'ApiSecret']
         }
         super().__init__()
