@@ -325,14 +325,16 @@ class TraderBaseClass(ProcessBaseClass):
                 "OtherError: " + str(ErrorMessage)
             )
 
-    def placeMarketOrder(self, OrderSideStr):
+    def placeMarketOrder(self, OrderSideStr, QuantityInt=None):
+        if QuantityInt is None:
+            QuantityInt = abs(self.OpenPositionCountInt)
         try:
             if self.ExchangeConnectionDetails['ExchangeName'] == Constant.BINANCE_EXCHANGE_ID:
                 self.ExchangeConnectionObj.sapi_post_margin_order({
                     'symbol': 'BTCUSDT',
                     'side': OrderSideStr.upper(),
                     'type': 'MARKET',
-                    'quantity': -self.OpenPositionCountInt,
+                    'quantity': QuantityInt,
                     'timestamp': str(round(time.time() * 1000))
                 })
             else:
@@ -340,7 +342,7 @@ class TraderBaseClass(ProcessBaseClass):
                     self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX],
                     'market',
                     OrderSideStr,
-                    -self.OpenPositionCountInt,
+                    QuantityInt,
                     {'type': 'market'}
                 )
             self.createOrderLog(
@@ -348,9 +350,11 @@ class TraderBaseClass(ProcessBaseClass):
                 'market',
                 'close',
                 OrderSideStr,
-                -self.OpenPositionCountInt,
+                QuantityInt,
                 self.CurrentSystemVariables['CurrentPortfolioValue']
             )
+
+            return True
         except ccxt.NetworkError as ErrorMessage:
             self.createExchangeInteractionLog(
                 self.ProcessName,
@@ -358,7 +362,7 @@ class TraderBaseClass(ProcessBaseClass):
                 "create_order("
                 + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
                 + ", 'market'," +
-                OrderSideStr + "," + str(-self.OpenPositionCountInt) + ", " +
+                OrderSideStr + "," + str(QuantityInt) + ", " +
                 "market" + ")",
                 "NetworkError: " + str(ErrorMessage)
             )
@@ -369,7 +373,7 @@ class TraderBaseClass(ProcessBaseClass):
                 "create_order("
                 + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
                 + ", 'market'," +
-                OrderSideStr + "," + str(-self.OpenPositionCountInt) + ", " +
+                OrderSideStr + "," + str(QuantityInt) + ", " +
                 "market" + ")",
                 "ExchangeError: " + str(ErrorMessage)
             )
@@ -380,10 +384,12 @@ class TraderBaseClass(ProcessBaseClass):
                 "create_order("
                 + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
                 + ", 'market'," +
-                OrderSideStr + "," + str(-self.OpenPositionCountInt) + ", " +
+                OrderSideStr + "," + str(QuantityInt) + ", " +
                 "market" + ")",
                 "OtherError: " + str(ErrorMessage)
             )
+
+        return False
 
     def getOrderQuantity(self):
         AlgorithmExposureFloat = float(self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_EXPOSURE_INDEX])
@@ -419,6 +425,8 @@ class TraderBaseClass(ProcessBaseClass):
                 return False
         elif self.CurrentSystemVariables['TradingState'] == 'Market Dead Stop' or \
                 self.CurrentSystemVariables['TradingState'] == 'Manual Halt':
+            if self.OpenOrderCountInt > 0:
+                self.cancelAllOrders()
             if self.OpenPositionCountInt != 0:
                 if self.OpenPositionCountInt > 0:
                     self.placeMarketOrder('sell')

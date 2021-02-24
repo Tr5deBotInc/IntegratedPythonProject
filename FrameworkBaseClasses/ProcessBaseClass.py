@@ -65,7 +65,7 @@ class ProcessBaseClass:
         if self.validateObject(Object, 'SystemVariables'):
             self.CurrentSystemVariables = Object
         else:
-            print("Process Base Class for " + self.ProcessName + ": please provide valid State Variable Object")
+            print("Process Base Class for " + self.ProcessName + ": please provide valid System Variable Object")
             SystemObj.exit()
 
     def setCandleArr(self, Object):

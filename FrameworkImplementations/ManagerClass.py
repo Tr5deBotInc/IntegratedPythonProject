@@ -34,6 +34,10 @@ class ManagerClass(ManagerBaseClass):
     IndicatorTimeStampObj = {
         'datetime': None
     }
+    CloseOrderCountObj = {
+        'OrderCount': None,
+        'RetestCount': None
+    }
 
     def __init__(self):
         # print("Manager Class Constructor")
@@ -52,12 +56,14 @@ class ManagerClass(ManagerBaseClass):
         IndicatorGenerationObj.setAlgorithmConfigurationObj(self.AlgorithmConfigurationObj)
         IndicatorGenerationObj.setExchangeConnectionObj(self.ExchangeConnectionObj)
         IndicatorGenerationObj.setDatabaseConnectionDetailsObj(self.DatabaseConnectionDetails)
+        IndicatorGenerationObj.setSystemVariables(self.SystemVariablesObj)
         IndicatorGenerationObj.setIndicators({
             'BB': self.BollingerBandObj,
             'RSI': self.RsiBandObj,
             'SMA': self.CurrentSimpleMovingAverageFloat,
             'EMA': self.CurrentExponentialMovingAverageObj,
             'EMA_RETEST': self.CurrentExponentialMovingAverageRetestInt,
+            'COC': self.CloseOrderCountObj,
             'TimeStamp': self.IndicatorTimeStampObj
         })
         IndicatorGenerationObj.setCandleArr({
@@ -65,10 +71,20 @@ class ManagerClass(ManagerBaseClass):
         })
 
         RiskManagementObj = RiskManagementClass()
+        RiskManagementObj.setAlgorithmConfigurationObj(self.AlgorithmConfigurationObj)
         RiskManagementObj.setExchangeConnectionObj(self.ExchangeConnectionObj)
         RiskManagementObj.setDatabaseConnectionDetailsObj(self.DatabaseConnectionDetails)
         RiskManagementObj.setSystemVariables(self.SystemVariablesObj)
         RiskManagementObj.setExchangeConnectionDetailsObj(self.ExchangeConnectionDetails)
+        RiskManagementObj.setIndicators({
+            'BB': self.BollingerBandObj,
+            'RSI': self.RsiBandObj,
+            'SMA': self.CurrentSimpleMovingAverageFloat,
+            'EMA': self.CurrentExponentialMovingAverageObj,
+            'EMA_RETEST': self.CurrentExponentialMovingAverageRetestInt,
+            'COC': self.CloseOrderCountObj,
+            'TimeStamp': self.IndicatorTimeStampObj
+        })
 
         TraderObj = TraderClass()
         TraderObj.setExchangeConnectionObj(self.ExchangeConnectionObj)
@@ -80,6 +96,7 @@ class ManagerClass(ManagerBaseClass):
             'SMA': self.CurrentSimpleMovingAverageFloat,
             'EMA': self.CurrentExponentialMovingAverageObj,
             'EMA_RETEST': self.CurrentExponentialMovingAverageRetestInt,
+            'COC': self.CloseOrderCountObj,
             'TimeStamp': self.IndicatorTimeStampObj
         })
         TraderObj.setSystemVariables(self.SystemVariablesObj)
@@ -147,6 +164,12 @@ class ManagerClass(ManagerBaseClass):
             else:
                 self.createIndicatorUpdateLog(self.ProcessName, datetime.now(), 'RSI Band', {}, 'False')
 
+        self.CloseOrderCountObj = {
+            'OrderCount': 0,
+            'RetestCount': 0
+        }
+        self.createIndicatorUpdateLog(self.ProcessName, datetime.now(), 'COC', self.CloseOrderCountObj, 'True')
+
         self.CurrentSimpleMovingAverageFloat = ProjectFunctions.getSimpleMovingAverage(self.FiveMinCandleArr)
         self.IndicatorTimeStampObj = {'datetime': datetime.now()}
 
@@ -156,16 +179,19 @@ class ManagerClass(ManagerBaseClass):
         else:
             self.createIndicatorUpdateLog(self.ProcessName, self.IndicatorTimeStampObj['datetime'], 'SMA',
                                           {}, 'False')
+
         # endregion
         # region State Variable Initialization
         self.getCurrentPrice()
         self.getCurrentBalance()
+        self.getCurrentPosition()
         # endregion
 
     def initiateExecution(self):
         # this will be changed to a function that logs the one second price to the database
         self.getCurrentPrice()
         self.getCurrentBalance()
+        self.getCurrentPosition()
 
     def initiateStartingTimer(self):
         # region Making sure system starts at the beginning of 5 minutes
