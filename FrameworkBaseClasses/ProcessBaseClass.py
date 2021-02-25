@@ -213,7 +213,7 @@ class ProcessBaseClass:
 
         QueryStr = """INSERT INTO OrderLog (EntryTime, OrderPrice, OrderAction, OrderDirection, OrderQuantity, PortfolioValue, AlgorithmConfiguration, PositionSize)
                                                VALUES
-                                               (%s, %s, %s, %s, %s, %s, %s)"""
+                                               (%s, %s, %s, %s, %s, %s, %s, %s)"""
 
         QueryData = (
             EntryDateTimeObj,
