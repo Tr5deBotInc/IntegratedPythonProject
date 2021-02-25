@@ -166,7 +166,8 @@ class TraderBaseClass(ProcessBaseClass):
                 'close',
                 OrderSideStr,
                 OrderQuantityInt,
-                self.CurrentSystemVariables['CurrentPortfolioValue']
+                self.CurrentSystemVariables['CurrentPortfolioValue'],
+                self.CurrentSystemVariables['CurrentAccountPositionSize']
             )
         except ccxt.NetworkError as ErrorMessage:
             self.createExchangeInteractionLog(
@@ -233,7 +234,8 @@ class TraderBaseClass(ProcessBaseClass):
                 'open',
                 OrderSideStr,
                 OrderQuantityInt,
-                self.CurrentSystemVariables['CurrentPortfolioValue']
+                self.CurrentSystemVariables['CurrentPortfolioValue'],
+                self.CurrentSystemVariables['CurrentAccountPositionSize']
             )
         except ccxt.NetworkError as ErrorMessage:
             self.createExchangeInteractionLog(
@@ -292,7 +294,8 @@ class TraderBaseClass(ProcessBaseClass):
                 'open',
                 OrderSideStr,
                 OrderQuantityInt,
-                self.CurrentSystemVariables['CurrentPortfolioValue']
+                self.CurrentSystemVariables['CurrentPortfolioValue'],
+                self.CurrentSystemVariables['CurrentAccountPositionSize']
             )
         except ccxt.NetworkError as ErrorMessage:
             self.createExchangeInteractionLog(
@@ -351,7 +354,8 @@ class TraderBaseClass(ProcessBaseClass):
                 'close',
                 OrderSideStr,
                 QuantityInt,
-                self.CurrentSystemVariables['CurrentPortfolioValue']
+                self.CurrentSystemVariables['CurrentPortfolioValue'],
+                self.CurrentSystemVariables['CurrentAccountPositionSize']
             )
 
             return True
