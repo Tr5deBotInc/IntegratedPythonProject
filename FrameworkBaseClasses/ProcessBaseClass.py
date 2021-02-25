@@ -208,10 +208,10 @@ class ProcessBaseClass:
         self.templateDatabaseLogger(QueryStr, QueryData, "createPriceLogEntry")
 
     def createOrderLog(self, EntryDateTimeObj, OrderPriceFloat, OrderActionStr, OrderDirectionStr, OrderQuantityInt,
-                       PortfolioValueFloat):
+                       PortfolioValueFloat, PositionSizeFloat=0):
         SelectedAlgorithmId = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_ID_INDEX]
 
-        QueryStr = """INSERT INTO OrderLog (EntryTime, OrderPrice, OrderAction, OrderDirection, OrderQuantity, PortfolioValue, AlgorithmConfiguration)
+        QueryStr = """INSERT INTO OrderLog (EntryTime, OrderPrice, OrderAction, OrderDirection, OrderQuantity, PortfolioValue, AlgorithmConfiguration, PositionSize)
                                                VALUES
                                                (%s, %s, %s, %s, %s, %s, %s)"""
 
@@ -222,7 +222,8 @@ class ProcessBaseClass:
             OrderDirectionStr,
             str(OrderQuantityInt),
             PortfolioValueFloat,
-            SelectedAlgorithmId
+            SelectedAlgorithmId,
+            PositionSizeFloat,
         )
         self.templateDatabaseLogger(QueryStr, QueryData, "createOrderLog")
 
