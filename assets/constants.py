@@ -38,5 +38,6 @@ EMA_21_ANALYSER_BASE_VERSION = 'e_m_a_21_analyser'
 BB_RSI_ANALYSER_BASE_VERSION = 'bb_rsi_analyser'
 BB_RSI_ANALYSER_15_MINUTE_CANDLES = 'bb_rsi_analyser_15_min'
 BB_RSI_ANALYSER_15_MINUTE_CANDLES_IMPROVED = 'bb_rsi_analyser_15_min_improved'
+BB_RSI_ANALYSER_V3 = 'bb_rsi_analyser_v3'
 
 PRICE_DATA_GENERATION_BASE_VERSION = 'price_data_generation'

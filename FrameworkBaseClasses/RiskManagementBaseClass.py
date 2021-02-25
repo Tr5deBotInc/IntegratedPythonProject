@@ -73,7 +73,7 @@ class RiskManagementBaseClass(ProcessBaseClass):
     # also to update configuration entries
     def setAlgorithmTradingState(self, TradingStateStr):
         # print("set Algorithm Trading State")
-        QueryStr = """Update AlgorithmConfiguration Set TradingState = %s Where AlgorithmId = %s"""
+        QueryStr = """Update AlgorithmConfiguration Set TradingState = %s Where AlgorithmName = %s"""
 
         QueryData = (
             TradingStateStr,

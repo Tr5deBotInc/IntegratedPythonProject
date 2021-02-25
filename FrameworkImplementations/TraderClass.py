@@ -17,9 +17,9 @@ class TraderClass(TraderBaseClass):
 
         if AlgorithmNameStr == Constant.EMA_21_ANALYSER_BASE_VERSION:
             self.ema21AnalyzerAlgorithm()
-        elif AlgorithmNameStr == Constant.BB_RSI_ANALYSER_BASE_VERSION or AlgorithmNameStr == Constant.BB_RSI_ANALYSER_15_MINUTE_CANDLES:
+        elif AlgorithmNameStr == Constant.BB_RSI_ANALYSER_BASE_VERSION or AlgorithmNameStr == Constant.BB_RSI_ANALYSER_15_MINUTE_CANDLES or AlgorithmNameStr == Constant.BB_RSI_ANALYSER_15_MINUTE_CANDLES_IMPROVED:
             self.bbRsiTradingAlgorithm()
-        elif AlgorithmNameStr == Constant.BB_RSI_ANALYSER_15_MINUTE_CANDLES_IMPROVED:
+        elif AlgorithmNameStr == Constant.BB_RSI_ANALYSER_V3:
             self.bbRsiTradingAlgorithmImproved()
         elif AlgorithmNameStr == Constant.PRICE_DATA_GENERATION_BASE_VERSION:
             self.priceDataGeneration()
@@ -59,7 +59,6 @@ class TraderClass(TraderBaseClass):
                 return
             self.placeOpeningOrders()
             return
-
         for CurrentOrder in self.CurrentOrderArr:
             if self.OpenPositionCountInt < 0:
                 if CurrentOrder['side'] != 'buy' or CurrentOrder['price'] != round(self.IndicatorsObj['SMA']['value']):
@@ -108,39 +107,63 @@ class TraderClass(TraderBaseClass):
 
         self.createProcessExecutionLog(self.ProcessName, datetime.now(),
                                        "Indicators: " + str(self.IndicatorsObj))
-        if self.OpenOrderCountInt < 1:
-            if self.OpenPositionCountInt > 0:
-                self.placeClosingOrder('sell')
-                return
-            if self.OpenPositionCountInt < 0:
-                self.placeClosingOrder('buy')
-                return
-            self.placeOpeningOrders()
-            return
 
-        for CurrentOrder in self.CurrentOrderArr:
+        CurrentTradingStateStr = self.CurrentSystemVariables['TradingState']
+        if CurrentTradingStateStr == 'Active':
+            if self.OpenOrderCountInt < 1:
+                if self.OpenPositionCountInt > 0:
+                    self.placeClosingOrder('sell')
+                    return
+                if self.OpenPositionCountInt < 0:
+                    self.placeClosingOrder('buy')
+                    return
+                self.placeOpeningOrders()
+                return
+
+            for CurrentOrder in self.CurrentOrderArr:
+                if self.OpenPositionCountInt < 0:
+                    if CurrentOrder['side'] != 'buy' or CurrentOrder['price'] != round(self.IndicatorsObj['SMA']['value']):
+                        if self.cancelAllOrders() is True:
+                            self.placeClosingOrder('buy')
+                        return
+                elif self.OpenPositionCountInt > 0:
+                    if CurrentOrder['side'] != 'sell' or CurrentOrder['price'] != round(self.IndicatorsObj['SMA']['value']):
+                        if self.cancelAllOrders() is True:
+                            self.placeClosingOrder('sell')
+                        return
+                elif CurrentOrder['side'] == 'sell':
+                    UpperLimitArr = [self.IndicatorsObj['BB']['upper'], self.IndicatorsObj['RSI']['upper']]
+                    if CurrentOrder['price'] != round(max(UpperLimitArr)):
+                        if self.cancelAllOrders() is True:
+                            self.placeOpeningOrders()
+                        return
+                elif CurrentOrder['side'] == 'buy':
+                    LowerLimitArr = [self.IndicatorsObj['BB']['lower'], self.IndicatorsObj['RSI']['lower']]
+                    if CurrentOrder['price'] != round(min(LowerLimitArr)):
+                        if self.cancelAllOrders() is True:
+                            self.placeOpeningOrders()
+                        return
+        elif CurrentTradingStateStr == 'Reverse':
             if self.OpenPositionCountInt < 0:
-                if CurrentOrder['side'] != 'buy' or CurrentOrder['price'] != round(self.IndicatorsObj['SMA']['value']):
-                    if self.cancelAllOrders() is True:
-                        self.placeClosingOrder('buy')
-                    return
+                if self.CurrentSystemVariables['CurrentPrice'] > self.IndicatorsObj['SMA']['value']:
+                    if self.OpenOrderCountInt > 0:
+                        self.cancelAllOrders()
+                    self.placeMarketOrder('buy')
+
             elif self.OpenPositionCountInt > 0:
-                if CurrentOrder['side'] != 'sell' or CurrentOrder['price'] != round(self.IndicatorsObj['SMA']['value']):
-                    if self.cancelAllOrders() is True:
-                        self.placeClosingOrder('sell')
-                    return
-            elif CurrentOrder['side'] == 'sell':
-                UpperLimitArr = [self.IndicatorsObj['BB']['upper'], self.IndicatorsObj['RSI']['upper']]
-                if CurrentOrder['price'] != round(max(UpperLimitArr)):
-                    if self.cancelAllOrders() is True:
-                        self.placeOpeningOrders()
-                    return
-            elif CurrentOrder['side'] == 'buy':
-                LowerLimitArr = [self.IndicatorsObj['BB']['lower'], self.IndicatorsObj['RSI']['lower']]
-                if CurrentOrder['price'] != round(min(LowerLimitArr)):
-                    if self.cancelAllOrders() is True:
-                        self.placeOpeningOrders()
-                    return
+                if self.CurrentSystemVariables['CurrentPrice'] < self.IndicatorsObj['SMA']['value']:
+                    if self.OpenOrderCountInt > 0:
+                        self.cancelAllOrders()
+                    self.placeMarketOrder('sell')
+
+            if self.OpenPositionCountInt == 0:
+                PositionSizeFloat = format(self.getOrderQuantity(), '.4f')
+                if self.CurrentSystemVariables['CurrentPrice'] > self.IndicatorsObj['SMA']['value']:
+                    self.placeMarketOrder('sell', PositionSizeFloat)
+                elif self.CurrentSystemVariables['CurrentPrice'] < self.IndicatorsObj['SMA']['value']:
+                    self.placeMarketOrder('buy', PositionSizeFloat)
+        else:
+            self.createProcessExecutionLog(self.ProcessName, datetime.now(), "Process Failed: In bbRsiTradingAlgorithmImproved encountered undefined Trading State: " + CurrentTradingStateStr)
         # endregion
 
     def ema21AnalyzerAlgorithm(self):
