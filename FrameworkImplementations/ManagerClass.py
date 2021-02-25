@@ -108,8 +108,9 @@ class ManagerClass(ManagerBaseClass):
                 {'ProcessObj': self, 'IntervalInt': 1}
             ]
         else:
+            IndicatorGenerationIntervalInt = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_INDICATOR_CANDLE_DURATION_INDEX] * 60
             self.ThreadInstantiationArr = [
-                {'ProcessObj': IndicatorGenerationObj, 'IntervalInt': 300},
+                {'ProcessObj': IndicatorGenerationObj, 'IntervalInt': IndicatorGenerationIntervalInt},
                 {'ProcessObj': RiskManagementObj, 'IntervalInt': 60},
                 {'ProcessObj': TraderObj, 'IntervalInt': 10},
                 {'ProcessObj': self, 'IntervalInt': 1}
