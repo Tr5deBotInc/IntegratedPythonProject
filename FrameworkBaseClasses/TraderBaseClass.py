@@ -72,9 +72,9 @@ class TraderBaseClass(ProcessBaseClass):
                 BinanceAssetObjArr = self.ExchangeConnectionObj.fetchBalance()['info']['userAssets']
                 for BinanceAssetObj in BinanceAssetObjArr:
                     if BinanceAssetObj['asset'] == self.MarginTradingCurrency:
-                        if float(BinanceAssetObj['netAsset']) > 0.00019:
+                        if float(BinanceAssetObj['netAsset']) > 0.0002:
                             return ProjectFunctions.truncateFloat(abs(float(BinanceAssetObj['netAsset'])), 4)
-                        elif float(BinanceAssetObj['netAsset']) < -0.00019:
+                        elif float(BinanceAssetObj['netAsset']) < -0.0002:
                             return ProjectFunctions.truncateFloat(-abs(float(BinanceAssetObj['netAsset'])), 4)
             else:
                 CurrentPositionObj = self.ExchangeConnectionObj.private_get_position()
