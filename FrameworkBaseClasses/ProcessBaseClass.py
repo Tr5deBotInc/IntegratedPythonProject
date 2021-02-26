@@ -239,7 +239,7 @@ class ProcessBaseClass:
             LimitInt = CandleDurationInt * FrameCountInt
             SinceTimeInt = round((time.time() * 1000) - (1000 * LimitInt * 60))
             ExtraTimeRoundOffInt = SinceTimeInt % (CandleDurationInt * 60 * 1000)
-            SinceTimeInt = SinceTimeInt - SinceTimeInt % ExtraTimeRoundOffInt
+            SinceTimeInt = SinceTimeInt - ExtraTimeRoundOffInt
 
             try:
                 CandlestickDataArr = self.ExchangeConnectionObj.fetch_ohlcv(
