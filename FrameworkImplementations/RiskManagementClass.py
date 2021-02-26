@@ -52,7 +52,7 @@ class RiskManagementClass(RiskManagementBaseClass):
 
     def determineTradingStateBbRsiV3(self):
         # print("get Algorithm Trading State")
-        AlgorithmRiskManagementLimitInt = 4
+        AlgorithmRiskManagementLimitInt = 12
         QueryStr = """Select * From AlgorithmConfiguration Where AlgorithmName = %s"""
 
         QueryData = (
