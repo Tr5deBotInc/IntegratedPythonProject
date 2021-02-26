@@ -14,10 +14,6 @@ def getBollingerBands(CandleDataArr, AlgorithmConfigurationObj):
         'upper': UpperBandFloat,
         'lower': LowerBandFloat
     }
-    print("BB Standard Deviation: " + str(BollingerBandStandardDeviationFloat))
-    print("SMA: " + str(SimpleMovingAverageFloat))
-    print("STD: " + str(StandardDeviationFloat))
-    print("Bollinger Band Obj: " + str(BollingerBandObj))
 
     return BollingerBandObj
 
@@ -65,7 +61,6 @@ def getRsiBands(CandleDataArr, AlgorithmConfigurationObj):
 
 def getSimpleMovingAverage(CandleDataArr):
     # print("get Simple Moving Average")
-    print(CandleDataArr)
     CandleArrSumFloat = 0
     for CandleObj in CandleDataArr:
         CandleArrSumFloat += CandleObj['mid']
