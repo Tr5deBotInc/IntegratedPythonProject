@@ -82,7 +82,7 @@ class RiskManagementClass(RiskManagementBaseClass):
             self.setAlgorithmTradingState(self.CurrentSystemVariables['TradingState'])
 
     def monitorTradeFrequency(self):
-        if self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_STATE_INDEX] == 'Manual Halt':
+        if self.CurrentSystemVariables['TradingState'] == 'Manual Halt':
             return
 
         for TradeLimitSpecArr in Constant.TRADE_LIMITING_SPECIFICATION_ARR:
