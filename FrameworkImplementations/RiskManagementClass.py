@@ -91,6 +91,7 @@ class RiskManagementClass(RiskManagementBaseClass):
             ExecutedTradeArr = self.getMyTrades(TimeSpanInt)
             if len(ExecutedTradeArr) > TradeLimit:
                 self.setAlgorithmTradingState('Manual Halt')
+                self.CurrentSystemVariables['TradingState'] = 'Manual Halt'
                 break
         return
     # endregion
