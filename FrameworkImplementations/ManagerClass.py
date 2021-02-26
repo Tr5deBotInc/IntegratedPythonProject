@@ -44,6 +44,8 @@ class ManagerClass(ManagerBaseClass):
         super().__init__()
         self.initializeProcessObjects()
 
+        self.initiateStartingTimer()
+
         self.startProcessThreading()
 
     def initializeProcessObjects(self):
@@ -191,3 +193,21 @@ class ManagerClass(ManagerBaseClass):
         self.getCurrentPrice()
         self.getCurrentBalance()
         self.getCurrentPosition()
+
+    def initiateStartingTimer(self):
+        # region Making sure system starts at the beginning of 5 minutes
+        RunStartTimerSelectionStr = input("Would you like to run the timer?(Y/N):\n" + "Input: ")
+
+        if RunStartTimerSelectionStr != 'Y':
+            return
+
+        WhenToStartInt = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_INDICATOR_CANDLE_DURATION_INDEX]
+
+        if WhenToStartInt is None:
+            return
+
+        now = datetime.now()
+        next_run = now.replace(minute=int(now.minute / WhenToStartInt) * WhenToStartInt, second=0, microsecond=0) + timedelta(minutes=WhenToStartInt)
+        sleep_time = (next_run - now).total_seconds()
+        time.sleep(sleep_time)
+        # endregion
