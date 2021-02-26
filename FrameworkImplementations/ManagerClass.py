@@ -201,7 +201,7 @@ class ManagerClass(ManagerBaseClass):
         if RunStartTimerSelectionStr != 'Y':
             return
 
-        WhenToStartInt = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_STARTING_MINUTE_MULTIPLE_INDEX]
+        WhenToStartInt = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_INDICATOR_CANDLE_DURATION_INDEX]
 
         if WhenToStartInt is None:
             return
