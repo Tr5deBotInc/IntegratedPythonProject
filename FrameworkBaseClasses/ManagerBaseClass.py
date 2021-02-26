@@ -28,8 +28,10 @@ class ManagerBaseClass(ProcessBaseClass):
 
     def __init__(self):
         # print("Manager Base Class Constructor")
+        # print(dir(ccxt.binance())) --- Used to display all the api endpoints available on the exchange
         self.requestProjectInitiationState()
         self.initializeSystemData()
+
 
     def startProcessThreading(self):
         # print("start Process Threading")

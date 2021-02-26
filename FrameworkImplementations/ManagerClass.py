@@ -134,7 +134,7 @@ class ManagerClass(ManagerBaseClass):
         if self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_RSI_LOWER_INTENSITY_INDEX] is not None and self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_RSI_UPPER_INTENSITY_INDEX] is not None:
             RsiUsedBool = True
 
-        CandlestickDataArr = self.get1mCandles(CandleDurationInt * FrameCountInt)
+        CandlestickDataArr = self.get1mCandles(CandleDurationInt, FrameCountInt)
         for iterator in range(0, len(CandlestickDataArr), CandleDurationInt):
             self.FiveMinCandleArr.append({
                 'mid': (CandlestickDataArr[iterator][Constant.CANDLE_OPEN_PRICE_INDEX] +
@@ -196,6 +196,11 @@ class ManagerClass(ManagerBaseClass):
 
     def initiateStartingTimer(self):
         # region Making sure system starts at the beginning of 5 minutes
+        RunStartTimerSelectionStr = input("Would you like to run the timer?(Y/N):\n" + "Input: ")
+
+        if RunStartTimerSelectionStr != 'Y':
+            return
+
         WhenToStartInt = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_STARTING_MINUTE_MULTIPLE_INDEX]
 
         if WhenToStartInt is None:

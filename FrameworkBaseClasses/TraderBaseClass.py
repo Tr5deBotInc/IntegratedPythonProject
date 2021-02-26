@@ -167,7 +167,8 @@ class TraderBaseClass(ProcessBaseClass):
                 OrderSideStr,
                 OrderQuantityInt,
                 self.CurrentSystemVariables['CurrentPortfolioValue'],
-                self.CurrentSystemVariables['CurrentAccountPositionSize']
+                self.CurrentSystemVariables['CurrentAccountPositionSize'],
+                self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_STATE_INDEX]
             )
         except ccxt.NetworkError as ErrorMessage:
             self.createExchangeInteractionLog(
@@ -235,7 +236,8 @@ class TraderBaseClass(ProcessBaseClass):
                 OrderSideStr,
                 OrderQuantityInt,
                 self.CurrentSystemVariables['CurrentPortfolioValue'],
-                self.CurrentSystemVariables['CurrentAccountPositionSize']
+                self.CurrentSystemVariables['CurrentAccountPositionSize'],
+                self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_STATE_INDEX]
             )
         except ccxt.NetworkError as ErrorMessage:
             self.createExchangeInteractionLog(
@@ -295,7 +297,8 @@ class TraderBaseClass(ProcessBaseClass):
                 OrderSideStr,
                 OrderQuantityInt,
                 self.CurrentSystemVariables['CurrentPortfolioValue'],
-                self.CurrentSystemVariables['CurrentAccountPositionSize']
+                self.CurrentSystemVariables['CurrentAccountPositionSize'],
+                self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_STATE_INDEX]
             )
         except ccxt.NetworkError as ErrorMessage:
             self.createExchangeInteractionLog(
@@ -355,7 +358,8 @@ class TraderBaseClass(ProcessBaseClass):
                 OrderSideStr,
                 QuantityInt,
                 self.CurrentSystemVariables['CurrentPortfolioValue'],
-                self.CurrentSystemVariables['CurrentAccountPositionSize']
+                self.CurrentSystemVariables['CurrentAccountPositionSize'],
+                self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_STATE_INDEX]
             )
 
             return True
