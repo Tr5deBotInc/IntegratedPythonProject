@@ -61,7 +61,6 @@ def getRsiBands(CandleDataArr, AlgorithmConfigurationObj):
 
 def getSimpleMovingAverage(CandleDataArr):
     # print("get Simple Moving Average")
-    print(CandleDataArr)
     CandleArrSumFloat = 0
     for CandleObj in CandleDataArr:
         CandleArrSumFloat += CandleObj['mid']
