@@ -208,12 +208,12 @@ class ProcessBaseClass:
         self.templateDatabaseLogger(QueryStr, QueryData, "createPriceLogEntry")
 
     def createOrderLog(self, EntryDateTimeObj, OrderPriceFloat, OrderActionStr, OrderDirectionStr, OrderQuantityInt,
-                       PortfolioValueFloat, PositionSizeFloat=0):
+                       PortfolioValueFloat, PositionSizeFloat, TradingState):
         SelectedAlgorithmId = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_ID_INDEX]
 
-        QueryStr = """INSERT INTO OrderLog (EntryTime, OrderPrice, OrderAction, OrderDirection, OrderQuantity, PortfolioValue, AlgorithmConfiguration, PositionSize)
+        QueryStr = """INSERT INTO OrderLog (EntryTime, OrderPrice, OrderAction, OrderDirection, OrderQuantity, PortfolioValue, AlgorithmConfiguration, PositionSize, TradingState)
                                                VALUES
-                                               (%s, %s, %s, %s, %s, %s, %s, %s)"""
+                                               (%s, %s, %s, %s, %s, %s, %s, %s, %s)"""
 
         QueryData = (
             EntryDateTimeObj,
@@ -224,6 +224,7 @@ class ProcessBaseClass:
             PortfolioValueFloat,
             SelectedAlgorithmId,
             PositionSizeFloat,
+            TradingState,
         )
         self.templateDatabaseLogger(QueryStr, QueryData, "createOrderLog")
 
@@ -231,15 +232,20 @@ class ProcessBaseClass:
 
     # region Functions used to retrieve information from the exchange
     # This function will retrieve the latest (LimitInt) candles
-    def get1mCandles(self, LimitInt: int):
+    def get1mCandles(self, CandleDurationInt: int, FrameCountInt: int):
         # print("get 1m Candles")
         if self.ExchangeConnectionObj.has['fetchOHLCV']:
             time.sleep(self.ExchangeConnectionObj.rateLimit / 1000)
+            LimitInt = CandleDurationInt * FrameCountInt
+            SinceTimeInt = round((time.time() * 1000) - (1000 * LimitInt * 60))
+            ExtraTimeRoundOffInt = SinceTimeInt % (CandleDurationInt * 60 * 1000)
+            SinceTimeInt = SinceTimeInt - SinceTimeInt % ExtraTimeRoundOffInt
+
             try:
                 CandlestickDataArr = self.ExchangeConnectionObj.fetch_ohlcv(
                     self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX],
                     "1m",
-                    since=round((time.time() * 1000) - (1000 * LimitInt * 60)),
+                    since=SinceTimeInt,
                     limit=LimitInt
                 )
                 return CandlestickDataArr
@@ -252,6 +258,32 @@ class ProcessBaseClass:
                     + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
                     + "," + "1m,since=("
                     + str((time.time() * 1000) - (1000 * LimitInt * 60)) + "),limit=" + str(LimitInt) + ")",
+                    ErrorMessage
+                )
+
+        else:
+            return False
+
+    def getMyTrades(self, TimeSpan):
+        # print('get my trades')
+        if self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_EXCHANGE_NAME_INDEX] == Constant.BINANCE_EXCHANGE_ID:
+            time.sleep(self.ExchangeConnectionObj.rateLimit / 1000)
+            SinceTimeInt = round((time.time() * 1000) - (1000 * TimeSpan * 60))
+            try:
+                TradeDataArr = self.ExchangeConnectionObj.sapi_get_margin_mytrades({
+                    'symbol': 'BTCUSDT',
+                    'startTime': SinceTimeInt
+                })
+                return TradeDataArr
+            except Exception as ErrorMessage:
+
+                self.createExchangeInteractionLog(
+                    self.ProcessName,
+                    datetime.now(),
+                    "sapi_get_margin_mytrades(symbol="
+                    + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
+                    + "," + "since=("
+                    + str(SinceTimeInt) + "))",
                     ErrorMessage
                 )
 
