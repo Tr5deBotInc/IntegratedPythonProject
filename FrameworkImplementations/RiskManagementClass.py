@@ -1,6 +1,7 @@
 from FrameworkBaseClasses.RiskManagementBaseClass import RiskManagementBaseClass
 from assets import constants as Constant
 
+from datetime import datetime
 
 class RiskManagementClass(RiskManagementBaseClass):
     def __init__(self):
@@ -92,6 +93,7 @@ class RiskManagementClass(RiskManagementBaseClass):
             if len(ExecutedTradeArr) > TradeLimit:
                 self.setAlgorithmTradingState('Manual Halt')
                 self.CurrentSystemVariables['TradingState'] = 'Manual Halt'
+                self.createProcessExecutionLog(self.ProcessName, datetime.now(), "Process Update: Set algorithm trading state to Manual Halt due to violation of trade limit: " + str(TradeLimitSpecArr))
                 break
         return
     # endregion
