@@ -75,8 +75,6 @@ class RiskManagementBaseClass(ProcessBaseClass):
         # print("set Algorithm Trading State")
         QueryStr = """Update AlgorithmConfiguration Set TradingState = %s Where AlgorithmName = %s"""
 
-        print('setting algorithm trading state')
-        print(self.CurrentSystemVariables['AlgorithmId'])
         QueryData = (
             TradingStateStr,
             self.CurrentSystemVariables['AlgorithmId'],
