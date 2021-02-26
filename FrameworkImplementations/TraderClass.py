@@ -159,9 +159,9 @@ class TraderClass(TraderBaseClass):
             if self.OpenPositionCountInt == 0:
                 PositionSizeFloat = format(self.getOrderQuantity(), '.4f')
                 if self.CurrentSystemVariables['CurrentPrice'] > self.IndicatorsObj['SMA']['value']:
-                    self.placeMarketOrder('sell', PositionSizeFloat)
-                elif self.CurrentSystemVariables['CurrentPrice'] < self.IndicatorsObj['SMA']['value']:
                     self.placeMarketOrder('buy', PositionSizeFloat)
+                elif self.CurrentSystemVariables['CurrentPrice'] < self.IndicatorsObj['SMA']['value']:
+                    self.placeMarketOrder('sell', PositionSizeFloat)
         else:
             self.createProcessExecutionLog(self.ProcessName, datetime.now(), "Process Failed: In bbRsiTradingAlgorithmImproved encountered undefined Trading State: " + CurrentTradingStateStr)
         # endregion

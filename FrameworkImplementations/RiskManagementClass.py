@@ -52,7 +52,7 @@ class RiskManagementClass(RiskManagementBaseClass):
 
     def determineTradingStateBbRsiV3(self):
         # print("get Algorithm Trading State")
-        AlgorithmRiskManagementLimitInt = 12
+        AlgorithmRiskManagementLimitInt = 4
         QueryStr = """Select * From AlgorithmConfiguration Where AlgorithmName = %s"""
 
         QueryData = (
@@ -72,9 +72,9 @@ class RiskManagementClass(RiskManagementBaseClass):
                 self.CurrentSystemVariables['TradingState'] == 'Manual Halt':
             self.CurrentSystemVariables['TradingState'] = AlgorithmTradingState
 
-        if self.IndicatorsObj['COC']['OrderCount'] >= AlgorithmRiskManagementLimitInt and AlgorithmTradingState != 'Manual Halt':
+        if self.IndicatorsObj['COC']['OrderCount'] > AlgorithmRiskManagementLimitInt and AlgorithmTradingState != 'Manual Halt':
             self.CurrentSystemVariables['TradingState'] = 'Reverse'
-        elif self.IndicatorsObj['COC']['OrderCount'] < AlgorithmRiskManagementLimitInt and AlgorithmTradingState == 'Market Dead Stop':
+        elif self.IndicatorsObj['COC']['OrderCount'] <= AlgorithmRiskManagementLimitInt and AlgorithmTradingState == 'Market Dead Stop':
             self.CurrentSystemVariables['TradingState'] = 'Active'
 
         if AlgorithmTradingState != self.CurrentSystemVariables['TradingState']:
