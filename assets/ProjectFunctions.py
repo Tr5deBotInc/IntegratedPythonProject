@@ -14,10 +14,6 @@ def getBollingerBands(CandleDataArr, AlgorithmConfigurationObj):
         'upper': UpperBandFloat,
         'lower': LowerBandFloat
     }
-    print("BB Standard Deviation: " + str(BollingerBandStandardDeviationFloat))
-    print("SMA: " + str(SimpleMovingAverageFloat))
-    print("STD: " + str(StandardDeviationFloat))
-    print("Bollinger Band Obj: " + str(BollingerBandObj))
 
     return BollingerBandObj
 
