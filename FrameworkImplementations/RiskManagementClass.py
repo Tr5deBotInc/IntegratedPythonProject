@@ -3,28 +3,20 @@ from assets import constants as Constant
 
 from datetime import datetime
 
+
 class RiskManagementClass(RiskManagementBaseClass):
     def __init__(self):
         # print("Risk Management Class Constructor")
         super().__init__()
 
     def initiateExecution(self):
-        self.monitorTradeFrequency()
-        AlgorithmNameStr = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_ALGORITHM_NAME_INDEX]
-        if AlgorithmNameStr == Constant.BB_RSI_ANALYSER_15_MINUTE_CANDLES_IMPROVED:
-            self.determineTradingStateBbRsiImproved()
-        elif AlgorithmNameStr == Constant.BB_RSI_ANALYSER_V3:
-            self.determineTradingStateBbRsiV3()
-        else:
-            self.getAlgorithmTradingState()
 
-    def determineTradingStateBbRsiImproved(self):
-        # print("get Algorithm Trading State")
-        AlgorithmRiskManagementLimitInt = 12
+        # region Getting up to date algorithm trading state
+        AlgorithmNameStr = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_ALGORITHM_NAME_INDEX]
         QueryStr = """Select * From AlgorithmConfiguration Where AlgorithmName = %s"""
 
         QueryData = (
-            self.CurrentSystemVariables['AlgorithmId'],
+            AlgorithmNameStr,
         )
 
         AlgorithmConfigurationObjArr = self.templateDatabaseRetriever(QueryStr, QueryData,
@@ -32,6 +24,19 @@ class RiskManagementClass(RiskManagementBaseClass):
         if AlgorithmConfigurationObjArr is None or len(AlgorithmConfigurationObjArr) != 1:
             return
         AlgorithmTradingState = AlgorithmConfigurationObjArr[0][Constant.ALGORITHM_CONFIGURATION_TRADING_STATE_INDEX]
+        # endregion
+
+        self.monitorTradeFrequency(AlgorithmTradingState)
+        if AlgorithmNameStr == Constant.BB_RSI_ANALYSER_15_MINUTE_CANDLES_IMPROVED:
+            self.determineTradingStateBbRsiImproved(AlgorithmTradingState)
+        elif AlgorithmNameStr == Constant.BB_RSI_ANALYSER_V3:
+            self.determineTradingStateBbRsiV3(AlgorithmTradingState)
+        else:
+            self.getAlgorithmTradingState()
+
+    def determineTradingStateBbRsiImproved(self, AlgorithmTradingState):
+        # print("get Algorithm Trading State")
+        AlgorithmRiskManagementLimitInt = 12
 
         if AlgorithmTradingState == 'Manual Halt':
             self.CurrentSystemVariables['TradingState'] = 'Manual Halt'
@@ -50,20 +55,9 @@ class RiskManagementClass(RiskManagementBaseClass):
                 self.CurrentSystemVariables['TradingState'] = AlgorithmTradingState
             self.setAlgorithmTradingState(self.CurrentSystemVariables['TradingState'])
 
-    def determineTradingStateBbRsiV3(self):
+    def determineTradingStateBbRsiV3(self, AlgorithmTradingState):
         # print("get Algorithm Trading State")
-        AlgorithmRiskManagementLimitInt = 4
-        QueryStr = """Select * From AlgorithmConfiguration Where AlgorithmName = %s"""
-
-        QueryData = (
-            self.CurrentSystemVariables['AlgorithmId'],
-        )
-
-        AlgorithmConfigurationObjArr = self.templateDatabaseRetriever(QueryStr, QueryData,
-                                                                      "determineTradingStateBbRsiImproved")
-        if AlgorithmConfigurationObjArr is None or len(AlgorithmConfigurationObjArr) != 1:
-            return
-        AlgorithmTradingState = AlgorithmConfigurationObjArr[0][Constant.ALGORITHM_CONFIGURATION_TRADING_STATE_INDEX]
+        AlgorithmRiskManagementLimitInt = 12
 
         if AlgorithmTradingState == 'Manual Halt':
             self.CurrentSystemVariables['TradingState'] = 'Manual Halt'
@@ -74,7 +68,7 @@ class RiskManagementClass(RiskManagementBaseClass):
 
         if self.IndicatorsObj['COC']['OrderCount'] > AlgorithmRiskManagementLimitInt and AlgorithmTradingState != 'Manual Halt':
             self.CurrentSystemVariables['TradingState'] = 'Reverse'
-        elif self.IndicatorsObj['COC']['OrderCount'] <= AlgorithmRiskManagementLimitInt and AlgorithmTradingState == 'Market Dead Stop':
+        elif self.IndicatorsObj['COC']['OrderCount'] <= AlgorithmRiskManagementLimitInt and AlgorithmTradingState == 'Reverse':
             self.CurrentSystemVariables['TradingState'] = 'Active'
 
         if AlgorithmTradingState != self.CurrentSystemVariables['TradingState']:
@@ -82,8 +76,8 @@ class RiskManagementClass(RiskManagementBaseClass):
                 self.CurrentSystemVariables['TradingState'] = AlgorithmTradingState
             self.setAlgorithmTradingState(self.CurrentSystemVariables['TradingState'])
 
-    def monitorTradeFrequency(self):
-        if self.CurrentSystemVariables['TradingState'] == 'Manual Halt':
+    def monitorTradeFrequency(self, AlgorithmTradingState):
+        if AlgorithmTradingState == 'Manual Halt':
             return
 
         for TradeLimitSpecArr in Constant.TRADE_LIMITING_SPECIFICATION_ARR:
