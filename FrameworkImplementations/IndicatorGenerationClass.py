@@ -19,12 +19,11 @@ class IndicatorGenerationClass(IndicatorGenerationBaseClass):
         self.updateCandleArr()
         SelectedAlgorithmNameStr = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_ALGORITHM_NAME_INDEX]
 
-        if SelectedAlgorithmNameStr == Constant.BB_RSI_ANALYSER_BASE_VERSION or \
-                SelectedAlgorithmNameStr == Constant.BB_RSI_ANALYSER_15_MINUTE_CANDLES or \
-                SelectedAlgorithmNameStr == Constant.BB_RSI_ANALYSER_15_MINUTE_CANDLES_IMPROVED or \
-                SelectedAlgorithmNameStr == Constant.BB_RSI_ANALYSER_V3:
+        if SelectedAlgorithmNameStr == Constant.BB_RSI_ALGORITHM_V1 or \
+                SelectedAlgorithmNameStr == Constant.BB_RSI_ALGORITHM_V2 or \
+                SelectedAlgorithmNameStr == Constant.BB_RSI_ALGORITHM_V3:
             self.updateIndicatorsForBbRsiAlgorithm()
-        elif SelectedAlgorithmNameStr == Constant.EMA_21_ANALYSER_BASE_VERSION:
+        elif SelectedAlgorithmNameStr == Constant.EMA_ALGORITHM_V1:
             self.updateIndicatorsForEma21AnalyserAlgorithm()
 
         self.IndicatorsObj['TimeStamp']['datetime'] = datetime.now()
