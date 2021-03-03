@@ -27,9 +27,9 @@ class RiskManagementClass(RiskManagementBaseClass):
         # endregion
 
         self.monitorTradeFrequency(AlgorithmTradingState)
-        if AlgorithmNameStr == Constant.BB_RSI_ANALYSER_15_MINUTE_CANDLES_IMPROVED:
+        if AlgorithmNameStr == Constant.BB_RSI_ALGORITHM_V2:
             self.determineTradingStateBbRsiImproved(AlgorithmTradingState)
-        elif AlgorithmNameStr == Constant.BB_RSI_ANALYSER_V3:
+        elif AlgorithmNameStr == Constant.BB_RSI_ALGORITHM_V3:
             self.determineTradingStateBbRsiV3(AlgorithmTradingState)
         else:
             self.getAlgorithmTradingState()

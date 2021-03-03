@@ -168,7 +168,7 @@ class TraderBaseClass(ProcessBaseClass):
                 OrderQuantityInt,
                 self.CurrentSystemVariables['CurrentPortfolioValue'],
                 self.CurrentSystemVariables['CurrentAccountPositionSize'],
-                self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_STATE_INDEX]
+                self.CurrentSystemVariables['TradingState']
             )
         except ccxt.NetworkError as ErrorMessage:
             self.createExchangeInteractionLog(
@@ -237,7 +237,7 @@ class TraderBaseClass(ProcessBaseClass):
                 OrderQuantityInt,
                 self.CurrentSystemVariables['CurrentPortfolioValue'],
                 self.CurrentSystemVariables['CurrentAccountPositionSize'],
-                self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_STATE_INDEX]
+                self.CurrentSystemVariables['TradingState']
             )
         except ccxt.NetworkError as ErrorMessage:
             self.createExchangeInteractionLog(
@@ -298,7 +298,7 @@ class TraderBaseClass(ProcessBaseClass):
                 OrderQuantityInt,
                 self.CurrentSystemVariables['CurrentPortfolioValue'],
                 self.CurrentSystemVariables['CurrentAccountPositionSize'],
-                self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_STATE_INDEX]
+                self.CurrentSystemVariables['TradingState']
             )
         except ccxt.NetworkError as ErrorMessage:
             self.createExchangeInteractionLog(
@@ -359,7 +359,7 @@ class TraderBaseClass(ProcessBaseClass):
                 QuantityInt,
                 self.CurrentSystemVariables['CurrentPortfolioValue'],
                 self.CurrentSystemVariables['CurrentAccountPositionSize'],
-                self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_STATE_INDEX]
+                self.CurrentSystemVariables['TradingState']
             )
 
             return True

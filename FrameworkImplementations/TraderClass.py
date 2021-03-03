@@ -15,11 +15,11 @@ class TraderClass(TraderBaseClass):
     def initiateExecution(self):
         AlgorithmNameStr = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_ALGORITHM_NAME_INDEX]
 
-        if AlgorithmNameStr == Constant.EMA_21_ANALYSER_BASE_VERSION:
+        if AlgorithmNameStr == Constant.EMA_ALGORITHM_V1:
             self.ema21AnalyzerAlgorithm()
-        elif AlgorithmNameStr == Constant.BB_RSI_ANALYSER_BASE_VERSION or AlgorithmNameStr == Constant.BB_RSI_ANALYSER_15_MINUTE_CANDLES or AlgorithmNameStr == Constant.BB_RSI_ANALYSER_15_MINUTE_CANDLES_IMPROVED:
+        elif AlgorithmNameStr == Constant.BB_RSI_ALGORITHM_V1 or AlgorithmNameStr == Constant.BB_RSI_ALGORITHM_V2:
             self.bbRsiTradingAlgorithm()
-        elif AlgorithmNameStr == Constant.BB_RSI_ANALYSER_V3:
+        elif AlgorithmNameStr == Constant.BB_RSI_ALGORITHM_V3:
             self.bbRsiTradingAlgorithmImproved()
         elif AlgorithmNameStr == Constant.PRICE_DATA_GENERATION_BASE_VERSION:
             self.priceDataGeneration()

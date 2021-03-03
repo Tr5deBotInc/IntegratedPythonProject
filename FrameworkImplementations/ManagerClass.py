@@ -117,6 +117,7 @@ class ManagerClass(ManagerBaseClass):
             ]
 
     def initializeSystemData(self):
+        # print('Initializing system data')
         AlgorithmNameStr = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_ALGORITHM_NAME_INDEX]
         if AlgorithmNameStr == Constant.PRICE_DATA_GENERATION_BASE_VERSION:
             return
@@ -133,6 +134,10 @@ class ManagerClass(ManagerBaseClass):
         RsiUsedBool = False
         if self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_RSI_LOWER_INTENSITY_INDEX] is not None and self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_RSI_UPPER_INTENSITY_INDEX] is not None:
             RsiUsedBool = True
+
+        EmaUsedBool = False
+        if self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_EMA_SMOOTHING_FACTOR_INDEX] is not None:
+            EmaUsedBool = True
 
         CandlestickDataArr = self.get1mCandles(CandleDurationInt, FrameCountInt)
         for iterator in range(0, len(CandlestickDataArr), CandleDurationInt):
@@ -180,7 +185,6 @@ class ManagerClass(ManagerBaseClass):
         else:
             self.createIndicatorUpdateLog(self.ProcessName, self.IndicatorTimeStampObj['datetime'], 'SMA',
                                           {}, 'False')
-
         # endregion
         # region State Variable Initialization
         self.getCurrentPrice()
