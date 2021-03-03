@@ -32,7 +32,6 @@ class ManagerBaseClass(ProcessBaseClass):
         self.requestProjectInitiationState()
         self.initializeSystemData()
 
-
     def startProcessThreading(self):
         # print("start Process Threading")
         for ProcessInfoObj in self.ThreadInstantiationArr:

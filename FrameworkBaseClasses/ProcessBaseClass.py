@@ -89,6 +89,11 @@ class ProcessBaseClass:
         return ValidationResultBool
     # endregion
 
+    # region Functions used in initializing system data
+    def initializeEmaAndRetest(self):
+        pass
+    # endregion
+
     # region Base function used to retrieve information from the database
     def templateDatabaseRetriever(self, QueryStr, QueryData, FunctionNameStr=" "):
         try:
