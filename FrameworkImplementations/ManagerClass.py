@@ -14,7 +14,7 @@ from threading import Timer
 class ManagerClass(ManagerBaseClass):
     FiveMinCandleArr = []
     CurrentSimpleMovingAverageFloat = None
-    CurrentExponentialMovingAverageRetestInt = {
+    CurrentExponentialMovingAverageRetestObj = {
         'prev_EMA': None,
         'prev_candle': None,
         'retest_candle_count': None,
@@ -62,7 +62,7 @@ class ManagerClass(ManagerBaseClass):
             'RSI': self.RsiBandObj,
             'SMA': self.CurrentSimpleMovingAverageFloat,
             'EMA': self.CurrentExponentialMovingAverageObj,
-            'EMA_RETEST': self.CurrentExponentialMovingAverageRetestInt,
+            'EMA_RETEST': self.CurrentExponentialMovingAverageRetestObj,
             'COC': self.CloseOrderCountObj,
             'TimeStamp': self.IndicatorTimeStampObj
         })
@@ -81,7 +81,7 @@ class ManagerClass(ManagerBaseClass):
             'RSI': self.RsiBandObj,
             'SMA': self.CurrentSimpleMovingAverageFloat,
             'EMA': self.CurrentExponentialMovingAverageObj,
-            'EMA_RETEST': self.CurrentExponentialMovingAverageRetestInt,
+            'EMA_RETEST': self.CurrentExponentialMovingAverageRetestObj,
             'COC': self.CloseOrderCountObj,
             'TimeStamp': self.IndicatorTimeStampObj
         })
@@ -95,7 +95,7 @@ class ManagerClass(ManagerBaseClass):
             'RSI': self.RsiBandObj,
             'SMA': self.CurrentSimpleMovingAverageFloat,
             'EMA': self.CurrentExponentialMovingAverageObj,
-            'EMA_RETEST': self.CurrentExponentialMovingAverageRetestInt,
+            'EMA_RETEST': self.CurrentExponentialMovingAverageRetestObj,
             'COC': self.CloseOrderCountObj,
             'TimeStamp': self.IndicatorTimeStampObj
         })
@@ -187,16 +187,16 @@ class ManagerClass(ManagerBaseClass):
                                           {}, 'False')
 
         if EmaUsedBool:
-            self.initializeEmaAndRetest(self.CurrentExponentialMovingAverageObj, self.CurrentExponentialMovingAverageRetestInt)
+            self.initializeEmaAndRetest(self.CurrentExponentialMovingAverageObj, self.CurrentExponentialMovingAverageRetestObj)
             if ProjectFunctions.checkIfNumber(self.CurrentExponentialMovingAverageObj['value']):
                 self.createIndicatorUpdateLog(self.ProcessName, self.IndicatorTimeStampObj['datetime'], 'EMA',
                                               {'EMA': self.CurrentExponentialMovingAverageObj['value']}, 'True')
             else:
                 self.createIndicatorUpdateLog(self.ProcessName, self.IndicatorTimeStampObj['datetime'], 'EMA',
                                               {}, 'False')
-            if ProjectFunctions.checkIfNumber(self.CurrentExponentialMovingAverageRetestInt['retest_candle_count']):
+            if ProjectFunctions.checkIfNumber(self.CurrentExponentialMovingAverageRetestObj['retest_candle_count']):
                 self.createIndicatorUpdateLog(self.ProcessName, self.IndicatorTimeStampObj['datetime'], 'EMA_RETEST',
-                                              {'EMA_RETEST': self.CurrentExponentialMovingAverageRetestInt['retest_candle_count']}, 'True')
+                                              {'EMA_RETEST': self.CurrentExponentialMovingAverageRetestObj}, 'True')
             else:
                 self.createIndicatorUpdateLog(self.ProcessName, self.IndicatorTimeStampObj['datetime'], 'EMA_RETEST',
                                               {}, 'False')

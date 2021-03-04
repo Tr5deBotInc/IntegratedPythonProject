@@ -159,7 +159,7 @@ class TraderClass(TraderBaseClass):
                 if self.CurrentSystemVariables['CurrentPrice'] > self.IndicatorsObj['SMA']['value']:
                     self.placeMarketOrder('buy', PositionSizeFloat)
                 elif self.CurrentSystemVariables['CurrentPrice'] < self.IndicatorsObj['SMA']['value']:
-                    self.placeMarketOrder('sell', PositionSizeFloat)
+                    self.placeMarketOrder('sell', PositionSizeFloat, True)
         else:
             self.createProcessExecutionLog(self.ProcessName, datetime.now(), "Process Failed: In bbRsiTradingAlgorithmImproved encountered undefined Trading State: " + CurrentTradingStateStr)
         # endregion

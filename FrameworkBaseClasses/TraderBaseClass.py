@@ -331,18 +331,28 @@ class TraderBaseClass(ProcessBaseClass):
                 "OtherError: " + str(ErrorMessage)
             )
 
-    def placeMarketOrder(self, OrderSideStr, QuantityInt=None):
+    def placeMarketOrder(self, OrderSideStr, QuantityInt=None, BorrowBool=False):
         if QuantityInt is None:
             QuantityInt = abs(self.CurrentSystemVariables['CurrentAccountPositionSize'])
         try:
             if self.ExchangeConnectionDetails['ExchangeName'] == Constant.BINANCE_EXCHANGE_ID:
-                self.ExchangeConnectionObj.sapi_post_margin_order({
-                    'symbol': 'BTCUSDT',
-                    'side': OrderSideStr.upper(),
-                    'type': 'MARKET',
-                    'quantity': QuantityInt,
-                    'timestamp': str(round(time.time() * 1000))
-                })
+                if BorrowBool:
+                    self.ExchangeConnectionObj.sapi_post_margin_order({
+                        'symbol': 'BTCUSDT',
+                        'side': OrderSideStr.upper(),
+                        'type': 'MARKET',
+                        'quantity': QuantityInt,
+                        'sideEffectType': 'MARGIN_BUY',
+                        'timestamp': str(round(time.time() * 1000))
+                    })
+                else:
+                    self.ExchangeConnectionObj.sapi_post_margin_order({
+                        'symbol': 'BTCUSDT',
+                        'side': OrderSideStr.upper(),
+                        'type': 'MARKET',
+                        'quantity': QuantityInt,
+                        'timestamp': str(round(time.time() * 1000))
+                    })
             else:
                 self.ExchangeConnectionObj.create_order(
                     self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX],
