@@ -178,8 +178,11 @@ class IndicatorGenerationBaseClass(ProcessBaseClass):
                                           {}, 'False')
 
     def updateClosingOrderCountIndicator(self):
-        if self.CurrentSystemVariables['CurrentAccountPositionSize'] != 0:
+        if self.CurrentSystemVariables['CurrentAccountPositionSize'] != 0 and self.IndicatorsObj['EMA_RETEST']['retest_candle_count'] >= self.IndicatorsObj['COC']['OrderCount']:
             self.IndicatorsObj['COC']['OrderCount'] += 1
+            self.IndicatorsObj['COC']['RetestCount'] = self.IndicatorsObj['EMA_RETEST']['retest_candle_count']
+        elif self.CurrentSystemVariables['CurrentAccountPositionSize'] != 0 and self.IndicatorsObj['EMA_RETEST']['retest_candle_count'] < self.IndicatorsObj['COC']['OrderCount']:
+            self.IndicatorsObj['COC']['OrderCount'] = self.IndicatorsObj['EMA_RETEST']['retest_candle_count']
             self.IndicatorsObj['COC']['RetestCount'] = self.IndicatorsObj['EMA_RETEST']['retest_candle_count']
         elif self.CurrentSystemVariables['CurrentAccountPositionSize'] == 0 and self.IndicatorsObj['EMA_RETEST']['retest_candle_count'] < self.IndicatorsObj['COC']['RetestCount']:
             self.IndicatorsObj['COC']['OrderCount'] = 0
