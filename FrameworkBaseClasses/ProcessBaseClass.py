@@ -279,6 +279,8 @@ class ProcessBaseClass:
                     'symbol': 'BTCUSDT',
                     'startTime': SinceTimeInt
                 })
+                if TradeDataArr is None:
+                    return []
                 return TradeDataArr
             except Exception as ErrorMessage:
 
@@ -291,7 +293,7 @@ class ProcessBaseClass:
                     + str(SinceTimeInt) + "))",
                     ErrorMessage
                 )
-
+                return []
         else:
-            return False
+            return []
     # endregion

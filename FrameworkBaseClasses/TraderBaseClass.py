@@ -354,7 +354,7 @@ class TraderBaseClass(ProcessBaseClass):
             self.createOrderLog(
                 datetime.now(),
                 self.CurrentSystemVariables['CurrentPrice'],
-                'close',
+                'market',
                 OrderSideStr,
                 QuantityInt,
                 self.CurrentSystemVariables['CurrentPortfolioValue'],
