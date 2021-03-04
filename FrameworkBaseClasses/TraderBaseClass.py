@@ -279,7 +279,6 @@ class TraderBaseClass(ProcessBaseClass):
                     'type': 'LIMIT',
                     'quantity': OrderQuantityInt,
                     'price': round(min(LowerLimitArr)),
-                    'sideEffectType': 'MARGIN_BUY',
                     'timeInForce': 'GTC',
                     'timestamp': str(round(time.time() * 1000))
                 })
