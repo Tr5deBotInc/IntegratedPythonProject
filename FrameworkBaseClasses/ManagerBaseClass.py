@@ -256,7 +256,6 @@ class ManagerBaseClass(ProcessBaseClass):
                 "OtherError: " + str(ErrorMessage)
             )
         return False
-        pass
     # endregion
 
     # region Function used to retrieve algorithm configurations from database
