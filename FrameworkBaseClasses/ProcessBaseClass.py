@@ -1,4 +1,5 @@
 from assets import constants as Constant
+from assets import ProjectFunctions
 
 import sys as SystemObj
 import mysql.connector
@@ -90,8 +91,61 @@ class ProcessBaseClass:
     # endregion
 
     # region Functions used in initializing system data
-    def initializeEmaAndRetest(self):
-        pass
+    def initializeEmaAndRetest(self, GivenEmaObj, GivenEmaRetestObj):
+        # print('Initializing EMA Retest Indicator')
+
+        CandleDurationInt = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_INDICATOR_CANDLE_DURATION_INDEX]
+        FrameCountInt = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_INDICATOR_FRAME_COUNT_INDEX]
+        EmaSmoothingFactor = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_EMA_SMOOTHING_FACTOR_INDEX]
+
+        RawCandleDataArr = self.get1mCandles(CandleDurationInt, FrameCountInt*2)
+        ProcessedCandleDataArr = []
+        for iterator in range(0, len(RawCandleDataArr), CandleDurationInt):
+            ProcessedCandleDataArr.append({
+                'mid': (RawCandleDataArr[iterator][Constant.CANDLE_OPEN_PRICE_INDEX] +
+                        RawCandleDataArr[iterator + CandleDurationInt-1][Constant.CANDLE_CLOSING_PRICE_INDEX])/2,
+                'open': RawCandleDataArr[iterator][Constant.CANDLE_OPEN_PRICE_INDEX],
+                'close': RawCandleDataArr[iterator + CandleDurationInt-1][Constant.CANDLE_CLOSING_PRICE_INDEX],
+                'time_stamp':
+                    RawCandleDataArr[iterator + CandleDurationInt-1][Constant.CANDLE_TIMESTAMP_INDEX]
+            })
+        SmaObj = ProjectFunctions.getSimpleMovingAverage(ProcessedCandleDataArr[0:FrameCountInt-1])
+        HistoricalEmaDataArr = []
+        PreviousEmaFloat = None
+        for index in range(0, FrameCountInt):
+            if PreviousEmaFloat is None:
+                PreviousEmaFloat = SmaObj['value']
+            else:
+                PreviousEmaFloat = HistoricalEmaDataArr[len(HistoricalEmaDataArr)-1]['value']
+            HistoricalEmaDataArr.append(ProjectFunctions.getExponentialMovingAverage(ProcessedCandleDataArr[index+1: FrameCountInt+index], FrameCountInt, PreviousEmaFloat, EmaSmoothingFactor))
+        EmaRetestCounterInt = 0
+        LatestEmaObj = HistoricalEmaDataArr[len(HistoricalEmaDataArr)-1]
+        LatestCandleObj = ProcessedCandleDataArr[len(ProcessedCandleDataArr)-1]
+        if LatestCandleObj['open'] > LatestEmaObj['value'] and LatestCandleObj['close'] > LatestEmaObj['value']:
+            EmaPlacementStr = 'above'
+        elif LatestCandleObj['open'] < LatestEmaObj['value'] and LatestCandleObj['close'] < LatestEmaObj['value']:
+            EmaPlacementStr = 'below'
+        else:
+            EmaPlacementStr = 'all over'
+
+        for index in range(FrameCountInt, 0, -1):
+            if ProcessedCandleDataArr[FrameCountInt+index-1]['open'] > HistoricalEmaDataArr[index-1]['value'] and ProcessedCandleDataArr[FrameCountInt+index-1]['close'] > HistoricalEmaDataArr[index-1]['value']:
+                TempPlacementStr = 'above'
+            elif ProcessedCandleDataArr[FrameCountInt+index-1]['open'] < HistoricalEmaDataArr[index-1]['value'] and ProcessedCandleDataArr[FrameCountInt+index-1]['close'] < HistoricalEmaDataArr[index-1]['value']:
+                TempPlacementStr = 'below'
+            else:
+                TempPlacementStr = 'all over'
+
+            if TempPlacementStr == EmaPlacementStr and EmaPlacementStr != 'all over':
+                EmaRetestCounterInt += 1
+            else:
+                break
+        GivenEmaObj['value'] = LatestEmaObj['value']
+        GivenEmaRetestObj['prev_EMA'] = LatestEmaObj['value']
+        GivenEmaRetestObj['prev_candle'] = LatestCandleObj
+        GivenEmaRetestObj['retest_candle_count'] = EmaRetestCounterInt
+        GivenEmaRetestObj['placement'] = EmaPlacementStr
+
     # endregion
 
     # region Base function used to retrieve information from the database

@@ -35,7 +35,7 @@ THIRD_FUNDING_HOUR = 20
 TRADE_LIMITING_SPECIFICATION_ARR = [[60, 20], [2, 4]]
 
 # Algorithm name related variables
-EMA_ALGORITHM_V1 = 'e_m_a_v1'
+EMA_ALGORITHM_V1 = 'ema_v1'
 
 BB_RSI_ALGORITHM_V1 = 'bb_rsi_v1'
 BB_RSI_ALGORITHM_V2 = 'bb_rsi_v2'

@@ -238,6 +238,9 @@ class TraderClass(TraderBaseClass):
         OpenedPositionsInt = len(self.CustomVariables['OpenPositions'])
         if OpenedPositionsInt > 0 and self.CustomVariables['OpenPositions'][OpenedPositionsInt-1]['RetestCount'] == self.CustomVariables['LastEmaRetestCount']:
             return
+        if self.CurrentSystemVariables['CurrentAccountPositionSize'] >= self.CurrentSystemVariables['CurrentPortfolioValue']:
+            print('EMA algorithm: too many positions opened. Waiting for them to open up.')
+            return
 
         if self.CurrentSystemVariables['CurrentPrice'] > self.IndicatorsObj['BB']['upper']:
             MarketOrderSideStr = 'sell'
