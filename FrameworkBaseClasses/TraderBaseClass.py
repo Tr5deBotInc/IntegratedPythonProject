@@ -138,7 +138,7 @@ class TraderBaseClass(ProcessBaseClass):
 
     def placeClosingOrder(self, OrderSideStr):
         OrderParameterObj = {}
-        OrderQuantityInt = format(abs(self.OpenPositionCountInt), '.8f')
+        OrderQuantityInt = format(abs(self.CurrentSystemVariables['CurrentAccountPositionSize']), '.8f')
         try:
             if self.ExchangeConnectionDetails['ExchangeName'] == Constant.BINANCE_EXCHANGE_ID:
                 self.ExchangeConnectionObj.sapi_post_margin_order({
@@ -333,7 +333,7 @@ class TraderBaseClass(ProcessBaseClass):
 
     def placeMarketOrder(self, OrderSideStr, QuantityInt=None):
         if QuantityInt is None:
-            QuantityInt = abs(self.OpenPositionCountInt)
+            QuantityInt = abs(self.CurrentSystemVariables['CurrentAccountPositionSize'])
         try:
             if self.ExchangeConnectionDetails['ExchangeName'] == Constant.BINANCE_EXCHANGE_ID:
                 self.ExchangeConnectionObj.sapi_post_margin_order({
@@ -424,21 +424,21 @@ class TraderBaseClass(ProcessBaseClass):
 
     def checkTradingState(self):
         if self.CurrentSystemVariables['TradingState'] == 'Market Halt':
-            if self.OpenPositionCountInt == 0 and self.OpenOrderCountInt > 0:
+            if self.CurrentSystemVariables['CurrentAccountPositionSize'] == 0 and self.OpenOrderCountInt > 0:
                 self.cancelAllOrders()
                 self.createProcessExecutionLog(self.ProcessName, datetime.now(),
                                                "Process Update: Closing all orders on Market Halt trading state")
                 return False
-            elif self.OpenOrderCountInt == 0 and self.OpenPositionCountInt == 0:
+            elif self.OpenOrderCountInt == 0 and self.CurrentSystemVariables['CurrentAccountPositionSize'] == 0:
                 return False
         elif self.CurrentSystemVariables['TradingState'] == 'Market Dead Stop' or \
                 self.CurrentSystemVariables['TradingState'] == 'Manual Halt':
             if self.OpenOrderCountInt > 0:
                 self.cancelAllOrders()
-            if self.OpenPositionCountInt != 0:
-                if self.OpenPositionCountInt > 0:
+            if self.CurrentSystemVariables['CurrentAccountPositionSize'] != 0:
+                if self.CurrentSystemVariables['CurrentAccountPositionSize'] > 0:
                     self.placeMarketOrder('sell')
-                elif self.OpenPositionCountInt < 0:
+                elif self.CurrentSystemVariables['CurrentAccountPositionSize'] < 0:
                     self.placeMarketOrder('buy')
 
                 self.createProcessExecutionLog(self.ProcessName, datetime.now(),
