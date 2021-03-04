@@ -185,6 +185,21 @@ class ManagerClass(ManagerBaseClass):
         else:
             self.createIndicatorUpdateLog(self.ProcessName, self.IndicatorTimeStampObj['datetime'], 'SMA',
                                           {}, 'False')
+
+        if EmaUsedBool:
+            self.initializeEmaAndRetest(self.CurrentExponentialMovingAverageObj, self.CurrentExponentialMovingAverageRetestInt)
+            if ProjectFunctions.checkIfNumber(self.CurrentExponentialMovingAverageObj['value']):
+                self.createIndicatorUpdateLog(self.ProcessName, self.IndicatorTimeStampObj['datetime'], 'EMA',
+                                              {'EMA': self.CurrentExponentialMovingAverageObj['value']}, 'True')
+            else:
+                self.createIndicatorUpdateLog(self.ProcessName, self.IndicatorTimeStampObj['datetime'], 'EMA',
+                                              {}, 'False')
+            if ProjectFunctions.checkIfNumber(self.CurrentExponentialMovingAverageRetestInt['retest_candle_count']):
+                self.createIndicatorUpdateLog(self.ProcessName, self.IndicatorTimeStampObj['datetime'], 'EMA_RETEST',
+                                              {'EMA_RETEST': self.CurrentExponentialMovingAverageRetestInt['retest_candle_count']}, 'True')
+            else:
+                self.createIndicatorUpdateLog(self.ProcessName, self.IndicatorTimeStampObj['datetime'], 'EMA_RETEST',
+                                              {}, 'False')
         # endregion
         # region State Variable Initialization
         self.getCurrentPrice()
