@@ -42,12 +42,11 @@ class ManagerBaseClass(ProcessBaseClass):
         # print("execute Each Time Interval")
         StartingTimeInt = time.time()
         while True:  # change this to work based on system state
-            self.createProcessExecutionLog(ProcessObj.ProcessName, datetime.now(), "Starting Process Execution")
+            # self.createProcessExecutionLog(ProcessObj.ProcessName, datetime.now(), "Starting Process Execution")
 
             try:
                 ProcessObj.initiateExecution()
-                self.createProcessExecutionLog(ProcessObj.ProcessName, datetime.now(),
-                                               "Process Executed Successfully")
+                # self.createProcessExecutionLog(ProcessObj.ProcessName, datetime.now(), "Process Executed Successfully")
             except Exception as ErrorMessage:
                 self.createProcessExecutionLog(ProcessObj.ProcessName, datetime.now(),
                                                "Process Failed: " + str(ErrorMessage) + "\n" + traceback.format_exc())
