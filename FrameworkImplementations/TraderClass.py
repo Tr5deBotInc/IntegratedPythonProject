@@ -42,13 +42,6 @@ class TraderClass(TraderBaseClass):
         # endregion
 
         # region Actual Algorithm
-        self.createProcessExecutionLog(self.ProcessName, datetime.now(),
-                                       "Process Update: Got to the start of the actual Algorithm. Open Position Count: "
-                                       + str(self.CurrentSystemVariables['CurrentAccountPositionSize']) + ". Open Order Count: " + str(
-                                           self.OpenOrderCountInt))
-
-        self.createProcessExecutionLog(self.ProcessName, datetime.now(),
-                                       "Indicators: " + str(self.IndicatorsObj))
         if self.OpenOrderCountInt < 1:
             if self.CurrentSystemVariables['CurrentAccountPositionSize'] > 0:
                 self.placeClosingOrder('sell')
@@ -98,14 +91,6 @@ class TraderClass(TraderBaseClass):
         # endregion
 
         # region Actual Algorithm
-        self.createProcessExecutionLog(self.ProcessName, datetime.now(),
-                                       "Process Update: Got to the start of the actual Algorithm. Open Position Count: "
-                                       + str(self.CurrentSystemVariables['CurrentAccountPositionSize']) + ". Open Order Count: " + str(
-                                           self.OpenOrderCountInt))
-
-        self.createProcessExecutionLog(self.ProcessName, datetime.now(),
-                                       "Indicators: " + str(self.IndicatorsObj))
-
         CurrentTradingStateStr = self.CurrentSystemVariables['TradingState']
         if CurrentTradingStateStr == 'Active':
             if self.OpenOrderCountInt < 1:
