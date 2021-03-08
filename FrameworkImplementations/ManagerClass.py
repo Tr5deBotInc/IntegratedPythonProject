@@ -113,7 +113,7 @@ class ManagerClass(ManagerBaseClass):
                 {'ProcessObj': IndicatorGenerationObj, 'IntervalInt': IndicatorGenerationIntervalInt},
                 {'ProcessObj': RiskManagementObj, 'IntervalInt': 60},
                 {'ProcessObj': TraderObj, 'IntervalInt': 10},
-                {'ProcessObj': self, 'IntervalInt': 1}
+                {'ProcessObj': self, 'IntervalInt': 3}
             ]
 
     def initializeSystemData(self):
