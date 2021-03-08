@@ -140,7 +140,7 @@ class TraderClass(TraderBaseClass):
                     self.placeMarketOrder('sell')
 
             if self.CurrentSystemVariables['CurrentAccountPositionSize'] == 0:
-                PositionSizeFloat = format(self.getOrderQuantity(), '.4f')
+                PositionSizeFloat = format(self.getOrderQuantity(), '.6f')
                 if self.CurrentSystemVariables['CurrentPrice'] > self.IndicatorsObj['SMA']['value']:
                     self.placeMarketOrder('buy', PositionSizeFloat)
                 elif self.CurrentSystemVariables['CurrentPrice'] < self.IndicatorsObj['SMA']['value']:
@@ -165,8 +165,7 @@ class TraderClass(TraderBaseClass):
             self.CustomVariables['OpenPositions'] = []
 
         self.OpenOrderCountInt = self.countOpenOrders()
-        PositionSizeInt = format(self.getOrderQuantity(), '.4f')
-        InsteadOfWhileLoopArr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        PositionSizeInt = format(self.getOrderQuantity(), '.6f')
 
         if self.CurrentSystemVariables['CurrentAccountPositionSize'] != 0 and len(self.CustomVariables['OpenPositions']) == 0:
             if self.CurrentSystemVariables['CurrentAccountPositionSize'] > 0:
@@ -238,7 +237,7 @@ class TraderClass(TraderBaseClass):
 
         self.cancelAllOrders()
         self.OpenOrderCountInt = self.countOpenOrders()
-        for i in InsteadOfWhileLoopArr:
+        for i in Constant.RETRY_LIMIT:
             if self.OpenOrderCountInt == 0:
                 break
             sleep(0.01)
@@ -250,7 +249,7 @@ class TraderClass(TraderBaseClass):
                  'PositionSize': PositionSizeInt, 'Status': 'New',
                  'RetestCount': self.CustomVariables['LastEmaRetestCount']})
 
-        for i in InsteadOfWhileLoopArr:
+        for i in Constant.RETRY_LIMIT:
             if self.CurrentSystemVariables['CurrentAccountPositionSize'] != 0:
                 break
             sleep(0.01)

@@ -194,7 +194,7 @@ class TraderBaseClass(ProcessBaseClass):
     def placeOpeningOrders(self):
         UpperLimitArr = [self.IndicatorsObj['BB']['upper'], self.IndicatorsObj['RSI']['upper']]
         LowerLimitArr = [self.IndicatorsObj['BB']['lower'], self.IndicatorsObj['RSI']['lower']]
-        OrderQuantityInt = format(self.getOrderQuantity(), '.4f')
+        OrderQuantityInt = format(self.getOrderQuantity(), '.6f')
 
         for iterator in range(0, Constant.RETRY_LIMIT):
             try:
