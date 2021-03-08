@@ -237,7 +237,7 @@ class TraderClass(TraderBaseClass):
 
         self.cancelAllOrders()
         self.OpenOrderCountInt = self.countOpenOrders()
-        for i in Constant.RETRY_LIMIT:
+        for i in range(0, Constant.RETRY_LIMIT):
             if self.OpenOrderCountInt == 0:
                 break
             sleep(0.01)
@@ -249,7 +249,7 @@ class TraderClass(TraderBaseClass):
                  'PositionSize': PositionSizeInt, 'Status': 'New',
                  'RetestCount': self.CustomVariables['LastEmaRetestCount']})
 
-        for i in Constant.RETRY_LIMIT:
+        for i in range(0, Constant.RETRY_LIMIT):
             if self.CurrentSystemVariables['CurrentAccountPositionSize'] != 0:
                 break
             sleep(0.01)
