@@ -44,12 +44,16 @@ class ManagerBaseClass(ProcessBaseClass):
         while True:  # change this to work based on system state
             # self.createProcessExecutionLog(ProcessObj.ProcessName, datetime.now(), "Starting Process Execution")
 
-            try:
-                ProcessObj.initiateExecution()
-                # self.createProcessExecutionLog(ProcessObj.ProcessName, datetime.now(), "Process Executed Successfully")
-            except Exception as ErrorMessage:
-                self.createProcessExecutionLog(ProcessObj.ProcessName, datetime.now(),
-                                               "Process Failed: " + str(ErrorMessage) + "\n" + traceback.format_exc())
+            for iterator in range(0, Constant.RETRY_LIMIT):
+                try:
+                    ProcessObj.initiateExecution()
+                    # self.createProcessExecutionLog(ProcessObj.ProcessName, datetime.now(), "Process Executed Successfully")
+                    break
+                except Exception as ErrorMessage:
+                    if iterator != Constant.RETRY_LIMIT-1:
+                        continue
+                    self.createProcessExecutionLog(ProcessObj.ProcessName, datetime.now(),
+                                                   "Process Failed: " + str(ErrorMessage) + "\n" + traceback.format_exc())
 
             if time.time() - StartingTimeInt < IntervalInt:
                 SleepingTimeFloat = IntervalInt - (time.time() - StartingTimeInt)
@@ -117,39 +121,47 @@ class ManagerBaseClass(ProcessBaseClass):
             self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_API_SECRET_INDEX]
         if self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_EXCHANGE_NAME_INDEX] == \
                 Constant.BITMEX_EXCHANGE_ID:
-            try:
-                ExchangeClassObj = getattr(ccxt, self.ExchangeConnectionDetails['ExchangeName'])
-                self.ExchangeConnectionObj = ExchangeClassObj({
-                    'apiKey': self.ExchangeConnectionDetails['ApiKey'],
-                    'secret': self.ExchangeConnectionDetails['ApiSecret'],
-                    'timeout': 30000,
-                    'enableRateLimit': True,
-                    'symbols': [
-                        self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
-                    ]
-                })
+            for iterator in range(0, Constant.RETRY_LIMIT):
+                try:
+                    ExchangeClassObj = getattr(ccxt, self.ExchangeConnectionDetails['ExchangeName'])
+                    self.ExchangeConnectionObj = ExchangeClassObj({
+                        'apiKey': self.ExchangeConnectionDetails['ApiKey'],
+                        'secret': self.ExchangeConnectionDetails['ApiSecret'],
+                        'timeout': 30000,
+                        'enableRateLimit': True,
+                        'symbols': [
+                            self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
+                        ]
+                    })
+                    break
 
-            except Exception as ErrorMessage:
-                print("Something went wrong when setting up Exchange connection: " + str(ErrorMessage))
+                except Exception as ErrorMessage:
+                    if iterator != Constant.RETRY_LIMIT-1:
+                        continue
+                    print("Something went wrong when setting up Exchange connection: " + str(ErrorMessage))
         elif self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_EXCHANGE_NAME_INDEX] == \
                 Constant.BINANCE_EXCHANGE_ID:
-            try:
-                ExchangeClassObj = getattr(ccxt, self.ExchangeConnectionDetails['ExchangeName'])
-                self.ExchangeConnectionObj = ExchangeClassObj({
-                    'apiKey': self.ExchangeConnectionDetails['ApiKey'],
-                    'secret': self.ExchangeConnectionDetails['ApiSecret'],
-                    'timeout': 30000,
-                    'enableRateLimit': True,
-                    'symbols': [
-                        self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
-                    ],
-                    'options': {
-                        'defaultType': 'margin'
-                    }
-                })
-            except Exception as ErrorMessage:
-                print("Something went wrong when setting up Exchange connection for Binance: " + str(ErrorMessage))
-                SystemObj.exit()
+            for iterator in range(0, Constant.RETRY_LIMIT):
+                try:
+                    ExchangeClassObj = getattr(ccxt, self.ExchangeConnectionDetails['ExchangeName'])
+                    self.ExchangeConnectionObj = ExchangeClassObj({
+                        'apiKey': self.ExchangeConnectionDetails['ApiKey'],
+                        'secret': self.ExchangeConnectionDetails['ApiSecret'],
+                        'timeout': 30000,
+                        'enableRateLimit': True,
+                        'symbols': [
+                            self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
+                        ],
+                        'options': {
+                            'defaultType': 'margin'
+                        }
+                    })
+                    break
+                except Exception as ErrorMessage:
+                    if iterator != Constant.RETRY_LIMIT-1:
+                        continue
+                    print("Something went wrong when setting up Exchange connection for Binance: " + str(ErrorMessage))
+                    SystemObj.exit()
         else:
             print("Invalid Exchange Name Selection")
             SystemObj.exit()
@@ -165,48 +177,60 @@ class ManagerBaseClass(ProcessBaseClass):
     # region Functions used to retrieve information from the exchange
     def getCurrentPrice(self):
         TradingPairSymbolStr = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
-        try:
-            self.SystemVariablesObj['CurrentPrice'] = self.ExchangeConnectionObj.fetch_ticker(TradingPairSymbolStr)['bid']
-        except Exception as ErrorMessage:
-            # Please create a log table and a log function for exchange related retrievals.
-            # We will only log errors in this table
-            self.createExchangeInteractionLog(
-                self.ProcessName,
-                datetime.now(),
-                " self.ExchangeConnectionObj.fetch_ticker(" + TradingPairSymbolStr + ")['bid']", ErrorMessage
-            )
+        for iterator in range(0, Constant.RETRY_LIMIT):
+            try:
+                self.SystemVariablesObj['CurrentPrice'] = self.ExchangeConnectionObj.fetch_ticker(TradingPairSymbolStr)['bid']
+                break
+            except Exception as ErrorMessage:
+                if iterator != Constant.RETRY_LIMIT-1:
+                    continue
+                # Please create a log table and a log function for exchange related retrievals.
+                # We will only log errors in this table
+                self.createExchangeInteractionLog(
+                    self.ProcessName,
+                    datetime.now(),
+                    " self.ExchangeConnectionObj.fetch_ticker(" + TradingPairSymbolStr + ")['bid']", ErrorMessage
+                )
 
     def getCurrentBalance(self):
         BalanceObj = None
-        try:
-            BalanceObj = self.ExchangeConnectionObj.fetch_balance()
-        except ccxt.NetworkError as ErrorMessage:
-            self.createExchangeInteractionLog(
-                self.ProcessName,
-                datetime.now(),
-                "fetch_balance()",
-                "NetworkError: " + str(ErrorMessage)
-            )
+        for iterator in range(0, Constant.RETRY_LIMIT):
+            try:
+                BalanceObj = self.ExchangeConnectionObj.fetch_balance()
+                break
+            except ccxt.NetworkError as ErrorMessage:
+                if iterator != Constant.RETRY_LIMIT-1:
+                    continue
+                self.createExchangeInteractionLog(
+                    self.ProcessName,
+                    datetime.now(),
+                    "fetch_balance()",
+                    "NetworkError: " + str(ErrorMessage)
+                )
+            except ccxt.ExchangeError as ErrorMessage:
+                if iterator != Constant.RETRY_LIMIT-1:
+                    continue
+                self.createExchangeInteractionLog(
+                    self.ProcessName,
+                    datetime.now(),
+                    "fetch_balance()",
+                    "ExchangeError: " + str(ErrorMessage)
+                )
+            except Exception as ErrorMessage:
+                if iterator != Constant.RETRY_LIMIT-1:
+                    continue
+                self.createExchangeInteractionLog(
+                    self.ProcessName,
+                    datetime.now(),
+                    "fetch_balance()",
+                    "OtherError: " + str(ErrorMessage)
+                )
+
+        if BalanceObj is None:
             return
-        except ccxt.ExchangeError as ErrorMessage:
-            self.createExchangeInteractionLog(
-                self.ProcessName,
-                datetime.now(),
-                "fetch_balance()",
-                "ExchangeError: " + str(ErrorMessage)
-            )
-            return
-        except Exception as ErrorMessage:
-            self.createExchangeInteractionLog(
-                self.ProcessName,
-                datetime.now(),
-                "fetch_balance()",
-                "OtherError: " + str(ErrorMessage)
-            )
-            return
+
         if self.ExchangeConnectionDetails['ExchangeName'] == Constant.BINANCE_EXCHANGE_ID:
-            self.SystemVariablesObj['CurrentPortfolioValue'] = float(BalanceObj['info']['totalNetAssetOfBtc']) * \
-                                                               self.SystemVariablesObj['CurrentPrice']
+            self.SystemVariablesObj['CurrentPortfolioValue'] = float(BalanceObj['info']['totalNetAssetOfBtc']) * self.SystemVariablesObj['CurrentPrice']
             for AssetObj in BalanceObj['info']['userAssets']:
                 if AssetObj['asset'] == self.BaseCurrency:
                     self.SystemVariablesObj['CurrentAccountBalance'] = AssetObj['free']
@@ -219,41 +243,49 @@ class ManagerBaseClass(ProcessBaseClass):
         TradingPairSymbolStr = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
         PairSplitIndexInt = TradingPairSymbolStr.find('/')
         MarginTradingCurrencyStr = TradingPairSymbolStr[0:PairSplitIndexInt]
-        try:
-            if self.ExchangeConnectionDetails['ExchangeName'] == Constant.BINANCE_EXCHANGE_ID:
-                BinanceAssetObjArr = self.ExchangeConnectionObj.fetchBalance()['info']['userAssets']
-                for BinanceAssetObj in BinanceAssetObjArr:
-                    if BinanceAssetObj['asset'] == MarginTradingCurrencyStr:
-                        if float(BinanceAssetObj['netAsset']) > 0.00019:
-                            self.SystemVariablesObj['CurrentAccountPositionSize'] = ProjectFunctions.truncateFloat(abs(float(BinanceAssetObj['netAsset'])), 4)
-                        elif float(BinanceAssetObj['netAsset']) < -0.00019:
-                            self.SystemVariablesObj['CurrentAccountPositionSize'] = ProjectFunctions.truncateFloat(-abs(float(BinanceAssetObj['netAsset'])), 4)
-                        else:
-                            self.SystemVariablesObj['CurrentAccountPositionSize'] = 0
-            else:
-                CurrentPositionObj = self.ExchangeConnectionObj.private_get_position()
-                self.SystemVariablesObj['CurrentAccountPositionSize'] = CurrentPositionObj[0]['currentQty']
-        except ccxt.NetworkError as ErrorMessage:
-            self.createExchangeInteractionLog(
-                self.ProcessName,
-                datetime.now(),
-                "private_get_position()",
-                "NetworkError: " + str(ErrorMessage)
-            )
-        except ccxt.ExchangeError as ErrorMessage:
-            self.createExchangeInteractionLog(
-                self.ProcessName,
-                datetime.now(),
-                "private_get_position()",
-                "ExchangeError: " + str(ErrorMessage)
-            )
-        except Exception as ErrorMessage:
-            self.createExchangeInteractionLog(
-                self.ProcessName,
-                datetime.now(),
-                "private_get_position()",
-                "OtherError: " + str(ErrorMessage)
-            )
+        for iterator in range(0, Constant.RETRY_LIMIT):
+            try:
+                if self.ExchangeConnectionDetails['ExchangeName'] == Constant.BINANCE_EXCHANGE_ID:
+                    BinanceAssetObjArr = self.ExchangeConnectionObj.fetchBalance()['info']['userAssets']
+                    for BinanceAssetObj in BinanceAssetObjArr:
+                        if BinanceAssetObj['asset'] == MarginTradingCurrencyStr:
+                            if float(BinanceAssetObj['netAsset'] * self.SystemVariablesObj['CurrentPrice']) > 11:
+                                self.SystemVariablesObj['CurrentAccountPositionSize'] = ProjectFunctions.truncateFloat(abs(float(BinanceAssetObj['netAsset'])), 8)
+                            elif float(BinanceAssetObj['netAsset'] * self.SystemVariablesObj['CurrentPrice']) < -11:
+                                self.SystemVariablesObj['CurrentAccountPositionSize'] = ProjectFunctions.truncateFloat(-abs(float(BinanceAssetObj['netAsset'])), 8)
+                            else:
+                                self.SystemVariablesObj['CurrentAccountPositionSize'] = 0
+                else:
+                    CurrentPositionObj = self.ExchangeConnectionObj.private_get_position()
+                    self.SystemVariablesObj['CurrentAccountPositionSize'] = CurrentPositionObj[0]['currentQty']
+                return True
+            except ccxt.NetworkError as ErrorMessage:
+                if iterator != Constant.RETRY_LIMIT-1:
+                    continue
+                self.createExchangeInteractionLog(
+                    self.ProcessName,
+                    datetime.now(),
+                    "private_get_position()",
+                    "NetworkError: " + str(ErrorMessage)
+                )
+            except ccxt.ExchangeError as ErrorMessage:
+                if iterator != Constant.RETRY_LIMIT-1:
+                    continue
+                self.createExchangeInteractionLog(
+                    self.ProcessName,
+                    datetime.now(),
+                    "private_get_position()",
+                    "ExchangeError: " + str(ErrorMessage)
+                )
+            except Exception as ErrorMessage:
+                if iterator != Constant.RETRY_LIMIT-1:
+                    continue
+                self.createExchangeInteractionLog(
+                    self.ProcessName,
+                    datetime.now(),
+                    "private_get_position()",
+                    "OtherError: " + str(ErrorMessage)
+                )
         return False
     # endregion
 

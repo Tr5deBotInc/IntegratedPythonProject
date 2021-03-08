@@ -32,6 +32,8 @@ FIRST_FUNDING_HOUR = 4
 SECOND_FUNDING_HOUR = 12
 THIRD_FUNDING_HOUR = 20
 
+# System related setting variables
+RETRY_LIMIT = 5
 TRADE_LIMITING_SPECIFICATION_ARR = [[60, 20], [2, 4]]
 
 # Algorithm name related variables

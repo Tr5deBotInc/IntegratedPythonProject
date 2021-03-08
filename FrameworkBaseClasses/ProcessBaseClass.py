@@ -150,54 +150,61 @@ class ProcessBaseClass:
 
     # region Base function used to retrieve information from the database
     def templateDatabaseRetriever(self, QueryStr, QueryData, FunctionNameStr=" "):
-        try:
-            ConnectionObj = mysql.connector.connect(host=self.DatabaseConnectionDetails['ServerName'],
-                                                    database=self.DatabaseConnectionDetails['DatabaseName'],
-                                                    user=self.DatabaseConnectionDetails['UserName'],
-                                                    password=self.DatabaseConnectionDetails['Password'])
+        for iterator in range(0, Constant.RETRY_LIMIT):
+            try:
+                ConnectionObj = mysql.connector.connect(host=self.DatabaseConnectionDetails['ServerName'],
+                                                        database=self.DatabaseConnectionDetails['DatabaseName'],
+                                                        user=self.DatabaseConnectionDetails['UserName'],
+                                                        password=self.DatabaseConnectionDetails['Password'])
 
-            CursorObj = ConnectionObj.cursor(buffered=True)
-            CursorObj.execute(QueryStr, QueryData)
-            RetrievedDataObj = CursorObj.fetchall()
-            if ConnectionObj.is_connected():
-                CursorObj.close()
-                ConnectionObj.close()
-            else:
-                print("Failed to close MySQL connection")
+                CursorObj = ConnectionObj.cursor(buffered=True)
+                CursorObj.execute(QueryStr, QueryData)
+                RetrievedDataObj = CursorObj.fetchall()
+                if ConnectionObj.is_connected():
+                    CursorObj.close()
+                    ConnectionObj.close()
+                else:
+                    print("Failed to close MySQL connection")
 
-            return RetrievedDataObj
+                return RetrievedDataObj
 
-        except mysql.connector.Error as error:
-            print(
-                self.ProcessName + " in " + FunctionNameStr + " failed to retrieve information from MySQL database {}".format(error))
-            print(QueryStr)
-            print(QueryData)
-            print(datetime.now())
+            except mysql.connector.Error as error:
+                if iterator != Constant.RETRY_LIMIT-1:
+                    continue
+                print(
+                    self.ProcessName + " in " + FunctionNameStr + " failed to retrieve information from MySQL database {}".format(error))
+                print(QueryStr)
+                print(QueryData)
+                print(datetime.now())
     # endregion
 
     # region Base function used to insert information into the database
     def templateDatabaseLogger(self, QueryStr, QueryData, FunctionNameStr=" "):
-        try:
-            ConnectionObj = mysql.connector.connect(host=self.DatabaseConnectionDetails['ServerName'],
-                                                    database=self.DatabaseConnectionDetails['DatabaseName'],
-                                                    user=self.DatabaseConnectionDetails['UserName'],
-                                                    password=self.DatabaseConnectionDetails['Password'])
+        for iterator in range(0, Constant.RETRY_LIMIT):
+            try:
+                ConnectionObj = mysql.connector.connect(host=self.DatabaseConnectionDetails['ServerName'],
+                                                        database=self.DatabaseConnectionDetails['DatabaseName'],
+                                                        user=self.DatabaseConnectionDetails['UserName'],
+                                                        password=self.DatabaseConnectionDetails['Password'])
 
-            CursorObj = ConnectionObj.cursor()
-            CursorObj.execute(QueryStr, QueryData)
-            ConnectionObj.commit()
+                CursorObj = ConnectionObj.cursor()
+                CursorObj.execute(QueryStr, QueryData)
+                ConnectionObj.commit()
 
-            if ConnectionObj.is_connected():
-                CursorObj.close()
-                ConnectionObj.close()
-            else:
-                print("Failed to close MySQL connection")
+                if ConnectionObj.is_connected():
+                    CursorObj.close()
+                    ConnectionObj.close()
+                else:
+                    print("Failed to close MySQL connection")
+                break
 
-        except mysql.connector.Error as error:
-            print(self.ProcessName + " in " + FunctionNameStr + " failed to insert into MySQL table {}".format(error))
-            print(QueryStr)
-            print(QueryData)
-            print(datetime.now())
+            except mysql.connector.Error as error:
+                if iterator != Constant.RETRY_LIMIT-1:
+                    continue
+                print(self.ProcessName + " in " + FunctionNameStr + " failed to insert into MySQL table {}".format(error))
+                print(QueryStr)
+                print(QueryData)
+                print(datetime.now())
     # endregion
 
     # region Functions used to log process successes and failures as system executes
@@ -300,25 +307,27 @@ class ProcessBaseClass:
             ExtraTimeRoundOffInt = SinceTimeInt % (CandleDurationInt * 60 * 1000)
             SinceTimeInt = SinceTimeInt - ExtraTimeRoundOffInt
 
-            try:
-                CandlestickDataArr = self.ExchangeConnectionObj.fetch_ohlcv(
-                    self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX],
-                    "1m",
-                    since=SinceTimeInt,
-                    limit=LimitInt
-                )
-                return CandlestickDataArr
-            except Exception as ErrorMessage:
-
-                self.createExchangeInteractionLog(
-                    self.ProcessName,
-                    datetime.now(),
-                    "fetch_ohlcv("
-                    + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
-                    + "," + "1m,since=("
-                    + str((time.time() * 1000) - (1000 * LimitInt * 60)) + "),limit=" + str(LimitInt) + ")",
-                    ErrorMessage
-                )
+            for iterator in range(0, Constant.RETRY_LIMIT):
+                try:
+                    CandlestickDataArr = self.ExchangeConnectionObj.fetch_ohlcv(
+                        self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX],
+                        "1m",
+                        since=SinceTimeInt,
+                        limit=LimitInt
+                    )
+                    return CandlestickDataArr
+                except Exception as ErrorMessage:
+                    if iterator != Constant.RETRY_LIMIT - 1:
+                        continue
+                    self.createExchangeInteractionLog(
+                        self.ProcessName,
+                        datetime.now(),
+                        "fetch_ohlcv("
+                        + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
+                        + "," + "1m,since=("
+                        + str((time.time() * 1000) - (1000 * LimitInt * 60)) + "),limit=" + str(LimitInt) + ")",
+                        ErrorMessage
+                    )
 
         else:
             return False
@@ -328,26 +337,28 @@ class ProcessBaseClass:
         if self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_EXCHANGE_NAME_INDEX] == Constant.BINANCE_EXCHANGE_ID:
             time.sleep(self.ExchangeConnectionObj.rateLimit / 1000)
             SinceTimeInt = round((time.time() * 1000) - (1000 * TimeSpan * 60))
-            try:
-                TradeDataArr = self.ExchangeConnectionObj.sapi_get_margin_mytrades({
-                    'symbol': 'BTCUSDT',
-                    'startTime': SinceTimeInt
-                })
-                if TradeDataArr is None:
+            for iterator in range(0, Constant.RETRY_LIMIT):
+                try:
+                    TradeDataArr = self.ExchangeConnectionObj.sapi_get_margin_mytrades({
+                        'symbol': 'BTCUSDT',
+                        'startTime': SinceTimeInt
+                    })
+                    if TradeDataArr is None:
+                        return []
+                    return TradeDataArr
+                except Exception as ErrorMessage:
+                    if iterator != Constant.RETRY_LIMIT-1:
+                        continue
+                    self.createExchangeInteractionLog(
+                        self.ProcessName,
+                        datetime.now(),
+                        "sapi_get_margin_mytrades(symbol="
+                        + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
+                        + "," + "since=("
+                        + str(SinceTimeInt) + "))",
+                        ErrorMessage
+                    )
                     return []
-                return TradeDataArr
-            except Exception as ErrorMessage:
-
-                self.createExchangeInteractionLog(
-                    self.ProcessName,
-                    datetime.now(),
-                    "sapi_get_margin_mytrades(symbol="
-                    + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
-                    + "," + "since=("
-                    + str(SinceTimeInt) + "))",
-                    ErrorMessage
-                )
-                return []
         else:
             return []
     # endregion
