@@ -21,44 +21,51 @@ class IndicatorGenerationBaseClass(ProcessBaseClass):
         # print("get 1m Candles")
         if self.ExchangeConnectionObj.has['fetchOHLCV']:
             time.sleep(self.ExchangeConnectionObj.rateLimit / 1000)
-            try:
-                CandlestickDataArr = self.ExchangeConnectionObj.fetch_ohlcv(
-                    self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX],
-                    "1m",
-                    since=SinceInt
-                )
-                return CandlestickDataArr
+            for iterator in range(0, Constant.RETRY_LIMIT):
+                try:
+                    CandlestickDataArr = self.ExchangeConnectionObj.fetch_ohlcv(
+                        self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX],
+                        "1m",
+                        since=SinceInt
+                    )
+                    return CandlestickDataArr
 
-            except ccxt.NetworkError as ErrorMessage:
-                self.createExchangeInteractionLog(
-                    self.ProcessName,
-                    datetime.now(),
-                    "fetch_ohlcv("
-                    + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
-                    + "," + "1m,since="
-                    + str(SinceInt) + ")",
-                    "NetworkError: " + str(ErrorMessage)
-                )
-            except ccxt.ExchangeError as ErrorMessage:
-                self.createExchangeInteractionLog(
-                    self.ProcessName,
-                    datetime.now(),
-                    "fetch_ohlcv("
-                    + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
-                    + "," + "1m,since="
-                    + str(SinceInt) + ")",
-                    "ExchangeError: " + str(ErrorMessage)
-                )
-            except Exception as ErrorMessage:
-                self.createExchangeInteractionLog(
-                    self.ProcessName,
-                    datetime.now(),
-                    "fetch_ohlcv("
-                    + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
-                    + "," + "1m,since="
-                    + str(SinceInt) + ")",
-                    "OtherError: " + str(ErrorMessage)
-                )
+                except ccxt.NetworkError as ErrorMessage:
+                    if iterator != Constant.RETRY_LIMIT-1:
+                        continue
+                    self.createExchangeInteractionLog(
+                        self.ProcessName,
+                        datetime.now(),
+                        "fetch_ohlcv("
+                        + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
+                        + "," + "1m,since="
+                        + str(SinceInt) + ")",
+                        "NetworkError: " + str(ErrorMessage)
+                    )
+                except ccxt.ExchangeError as ErrorMessage:
+                    if iterator != Constant.RETRY_LIMIT-1:
+                        continue
+                    self.createExchangeInteractionLog(
+                        self.ProcessName,
+                        datetime.now(),
+                        "fetch_ohlcv("
+                        + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
+                        + "," + "1m,since="
+                        + str(SinceInt) + ")",
+                        "ExchangeError: " + str(ErrorMessage)
+                    )
+                except Exception as ErrorMessage:
+                    if iterator != Constant.RETRY_LIMIT-1:
+                        continue
+                    self.createExchangeInteractionLog(
+                        self.ProcessName,
+                        datetime.now(),
+                        "fetch_ohlcv("
+                        + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
+                        + "," + "1m,since="
+                        + str(SinceInt) + ")",
+                        "OtherError: " + str(ErrorMessage)
+                    )
 
         else:
             return False
