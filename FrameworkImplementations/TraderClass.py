@@ -127,6 +127,12 @@ class TraderClass(TraderBaseClass):
                             self.placeOpeningOrders()
                         return
         elif CurrentTradingStateStr == 'Reverse':
+
+            if self.IndicatorsObj['EMA_RETEST']['placement'] == 'above' and self.CurrentSystemVariables['CurrentPrice'] < self.IndicatorsObj['SMA']['value']:
+                return
+            elif self.IndicatorsObj['EMA_RETEST']['placement'] == 'below' and self.CurrentSystemVariables['CurrentPrice'] > self.IndicatorsObj['SMA']['value']:
+                return
+
             if self.CurrentSystemVariables['CurrentAccountPositionSize'] < 0:
                 if self.CurrentSystemVariables['CurrentPrice'] > self.IndicatorsObj['SMA']['value']:
                     if self.OpenOrderCountInt > 0:
@@ -180,7 +186,7 @@ class TraderClass(TraderBaseClass):
                 if self.CustomVariables['OpenPositions'][i]['OrderSide'] == 'buy' and self.IndicatorsObj['EMA'][
                     'value'] <= self.CustomVariables['OpenPositions'][i]['PositionPrice'] and \
                         self.CustomVariables['OpenPositions'][i]['Status'] == 'New':
-                    if self.placeMarketOrder('sell', self.CustomVariables['OpenPositions'][i]['PositionSize']):
+                    if self.placeMarketOrder('sell', self.CustomVariables['OpenPositions'][i]['PositionSize'], True):
                         self.CustomVariables['OpenPositions'][i]['Status'] = 'Closed'
                         print('Marketed Open Position Sized: ' + str(
                             self.CustomVariables['OpenPositions'][i]['PositionSize']))
@@ -214,7 +220,7 @@ class TraderClass(TraderBaseClass):
             if self.CurrentSystemVariables['CurrentAccountPositionSize'] != 0:
                 print('Marketing all open positions because opened too early')
                 if self.CurrentSystemVariables['CurrentAccountPositionSize'] > 0:
-                    self.placeMarketOrder('sell')
+                    self.placeMarketOrder('sell', None, True)
                 elif self.CurrentSystemVariables['CurrentAccountPositionSize'] < 0:
                     self.placeMarketOrder('buy')
             return
@@ -229,9 +235,11 @@ class TraderClass(TraderBaseClass):
         if self.CurrentSystemVariables['CurrentPrice'] > self.IndicatorsObj['BB']['upper']:
             MarketOrderSideStr = 'sell'
             ClosingOrderSideStr = 'buy'
+            BorrowBool = True
         elif self.CurrentSystemVariables['CurrentPrice'] < self.IndicatorsObj['BB']['lower']:
             MarketOrderSideStr = 'buy'
             ClosingOrderSideStr = 'sell'
+            BorrowBool = False
         else:
             return
 
@@ -243,7 +251,7 @@ class TraderClass(TraderBaseClass):
             sleep(0.01)
             self.OpenOrderCountInt = self.countOpenOrders()
 
-        if self.placeMarketOrder(MarketOrderSideStr, PositionSizeInt):
+        if self.placeMarketOrder(MarketOrderSideStr, PositionSizeInt, BorrowBool):
             self.CustomVariables['OpenPositions'].append(
                 {'OrderSide': MarketOrderSideStr, 'PositionPrice': self.CurrentSystemVariables['CurrentPrice'],
                  'PositionSize': PositionSizeInt, 'Status': 'New',
