@@ -111,7 +111,7 @@ class ManagerClass(ManagerBaseClass):
             IndicatorGenerationIntervalInt = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_INDICATOR_CANDLE_DURATION_INDEX] * 60
             self.ThreadInstantiationArr = [
                 {'ProcessObj': IndicatorGenerationObj, 'IntervalInt': IndicatorGenerationIntervalInt},
-                {'ProcessObj': RiskManagementObj, 'IntervalInt': 60},
+                {'ProcessObj': RiskManagementObj, 'IntervalInt': 15},
                 {'ProcessObj': TraderObj, 'IntervalInt': 10},
                 {'ProcessObj': self, 'IntervalInt': 3}
             ]
@@ -140,12 +140,29 @@ class ManagerClass(ManagerBaseClass):
             EmaUsedBool = True
 
         CandlestickDataArr = self.get1mCandles(CandleDurationInt, FrameCountInt)
+
         for iterator in range(0, len(CandlestickDataArr), CandleDurationInt):
+            CandlestickSliceArr = CandlestickDataArr[iterator: iterator + CandleDurationInt]
+            MinPriceFloat = None
+            MaxPriceFloat = None
+            for CandlestickObj in CandlestickSliceArr:
+                if MinPriceFloat is None or MaxPriceFloat is None:
+                    MinPriceFloat = CandlestickObj[Constant.CANDLE_LOWEST_PRICE_INDEX]
+                    MaxPriceFloat = CandlestickObj[Constant.CANDLE_HIGHEST_PRICE_INDEX]
+                    continue
+                if CandlestickObj[Constant.CANDLE_LOWEST_PRICE_INDEX] < MinPriceFloat:
+                    MinPriceFloat = CandlestickObj[Constant.CANDLE_LOWEST_PRICE_INDEX]
+
+                if CandlestickObj[Constant.CANDLE_HIGHEST_PRICE_INDEX] > MaxPriceFloat:
+                    MaxPriceFloat = CandlestickObj[Constant.CANDLE_HIGHEST_PRICE_INDEX]
+
             self.FiveMinCandleArr.append({
                 'mid': (CandlestickDataArr[iterator][Constant.CANDLE_OPEN_PRICE_INDEX] +
                         CandlestickDataArr[iterator + CandleDurationInt-1][Constant.CANDLE_CLOSING_PRICE_INDEX])/2,
                 'open': CandlestickDataArr[iterator][Constant.CANDLE_OPEN_PRICE_INDEX],
                 'close': CandlestickDataArr[iterator + CandleDurationInt-1][Constant.CANDLE_CLOSING_PRICE_INDEX],
+                'low': MinPriceFloat,
+                'high': MaxPriceFloat,
                 'time_stamp':
                     CandlestickDataArr[iterator + CandleDurationInt-1][Constant.CANDLE_TIMESTAMP_INDEX]
             })

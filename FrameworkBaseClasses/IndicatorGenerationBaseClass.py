@@ -84,13 +84,26 @@ class IndicatorGenerationBaseClass(ProcessBaseClass):
         for iterator in range(0, len(OutstandingCandlestickArr), CandleDurationInt):
             if len(OutstandingCandlestickArr) < iterator + CandleDurationInt:
                 break
+            CandlestickSliceArr = OutstandingCandlestickArr[iterator: iterator + CandleDurationInt]
+            MinPriceFloat = None
+            MaxPriceFloat = None
+            for CandlestickObj in CandlestickSliceArr:
+                if MinPriceFloat is None or MaxPriceFloat is None:
+                    MinPriceFloat = CandlestickObj[Constant.CANDLE_LOWEST_PRICE_INDEX]
+                    MaxPriceFloat = CandlestickObj[Constant.CANDLE_HIGHEST_PRICE_INDEX]
+                    continue
+                if CandlestickObj[Constant.CANDLE_LOWEST_PRICE_INDEX] < MinPriceFloat:
+                    MinPriceFloat = CandlestickObj[Constant.CANDLE_LOWEST_PRICE_INDEX]
+
+                if CandlestickObj[Constant.CANDLE_HIGHEST_PRICE_INDEX] > MaxPriceFloat:
+                    MaxPriceFloat = CandlestickObj[Constant.CANDLE_HIGHEST_PRICE_INDEX]
+
             self.CandleArr['FiveMinuteCandles'].append({
-                'mid': (OutstandingCandlestickArr[iterator][Constant.CANDLE_OPEN_PRICE_INDEX] +
-                        OutstandingCandlestickArr[iterator + CandleDurationInt - 1][
-                            Constant.CANDLE_CLOSING_PRICE_INDEX]) / 2,
+                'mid': (OutstandingCandlestickArr[iterator][Constant.CANDLE_OPEN_PRICE_INDEX] + OutstandingCandlestickArr[iterator + CandleDurationInt - 1][Constant.CANDLE_CLOSING_PRICE_INDEX]) / 2,
                 'open': OutstandingCandlestickArr[iterator][Constant.CANDLE_OPEN_PRICE_INDEX],
-                'close': OutstandingCandlestickArr[iterator + CandleDurationInt - 1][
-                    Constant.CANDLE_CLOSING_PRICE_INDEX],
+                'close': OutstandingCandlestickArr[iterator + CandleDurationInt - 1][Constant.CANDLE_CLOSING_PRICE_INDEX],
+                'low': MinPriceFloat,
+                'high': MaxPriceFloat,
                 'time_stamp': OutstandingCandlestickArr[iterator + CandleDurationInt - 1][
                     Constant.CANDLE_TIMESTAMP_INDEX]
             })
@@ -152,13 +165,20 @@ class IndicatorGenerationBaseClass(ProcessBaseClass):
 
         LatestEmaValue = self.IndicatorsObj['EMA']['value']
         LatestCandleObj = self.CandleArr['FiveMinuteCandles'][len(self.CandleArr['FiveMinuteCandles'])-1]
-
-        if LatestCandleObj['open'] > LatestEmaValue and LatestCandleObj['close'] > LatestEmaValue:
-            CurrentMarketPlacementStr = 'above'
-        elif LatestCandleObj['open'] < LatestEmaValue and LatestCandleObj['close'] < LatestEmaValue:
-            CurrentMarketPlacementStr = 'below'
+        if abs(self.CurrentSystemVariables['CurrentAccountPositionSize']) > 0:
+            if LatestCandleObj['low'] > LatestEmaValue and LatestCandleObj['high'] > LatestEmaValue:
+                CurrentMarketPlacementStr = 'above'
+            elif LatestCandleObj['low'] < LatestEmaValue and LatestCandleObj['high'] < LatestEmaValue:
+                CurrentMarketPlacementStr = 'below'
+            else:
+                CurrentMarketPlacementStr = 'all over'
         else:
-            CurrentMarketPlacementStr = 'all over'
+            if LatestCandleObj['open'] > LatestEmaValue and LatestCandleObj['close'] > LatestEmaValue:
+                CurrentMarketPlacementStr = 'above'
+            elif LatestCandleObj['open'] < LatestEmaValue and LatestCandleObj['close'] < LatestEmaValue:
+                CurrentMarketPlacementStr = 'below'
+            else:
+                CurrentMarketPlacementStr = 'all over'
 
         if self.IndicatorsObj['EMA_RETEST']['prev_EMA'] is None:
             if CurrentMarketPlacementStr != 'all over':
