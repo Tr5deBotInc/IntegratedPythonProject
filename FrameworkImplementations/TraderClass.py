@@ -204,9 +204,9 @@ class TraderClass(TraderBaseClass):
             if self.CurrentSystemVariables['CurrentAccountPositionSize'] != 0:
                 self.cancelAllOrders()
                 if self.CurrentSystemVariables['CurrentAccountPositionSize'] > 0:
-                    self.placeClosingOrder('sell')
+                    self.placeClosingOrder('sell', 'EMA')
                 elif self.CurrentSystemVariables['CurrentAccountPositionSize'] < 0:
-                    self.placeClosingOrder('buy')
+                    self.placeClosingOrder('buy', 'EMA')
 
         if self.CustomVariables['LastEmaRetestCount'] < 21:
 
@@ -263,7 +263,7 @@ class TraderClass(TraderBaseClass):
             sleep(0.01)
 
         self.cancelAllOrders()
-        self.placeClosingOrder(ClosingOrderSideStr)
+        self.placeClosingOrder(ClosingOrderSideStr, 'EMA')
 
         print('New Position Size: ' + str(self.CurrentSystemVariables['CurrentAccountPositionSize']))
         print('Market Order Side: ' + MarketOrderSideStr)
