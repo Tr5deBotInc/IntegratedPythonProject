@@ -27,6 +27,7 @@ class RiskManagementClass(RiskManagementBaseClass):
         # endregion
 
         self.monitorTradeFrequency(AlgorithmTradingState)
+        self.monitorCocIndicator()
         if AlgorithmNameStr == Constant.BB_RSI_ALGORITHM_V2:
             self.determineTradingStateBbRsiImproved(AlgorithmTradingState)
         elif AlgorithmNameStr == Constant.BB_RSI_ALGORITHM_V3:
@@ -90,4 +91,8 @@ class RiskManagementClass(RiskManagementBaseClass):
                 self.createProcessExecutionLog(self.ProcessName, datetime.now(), "Process Update: Set algorithm trading state to Manual Halt due to violation of trade limit: " + str(TradeLimitSpecArr))
                 break
         return
+
+    def monitorCocIndicator(self):
+        if self.CurrentSystemVariables['CurrentAccountPositionSize'] == 0 and self.IndicatorsObj['COC']['OrderCount'] != 0:
+            self.IndicatorsObj['COC']['OrderCount'] = 0
     # endregion
