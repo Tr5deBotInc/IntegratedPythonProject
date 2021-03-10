@@ -37,5 +37,6 @@ class IndicatorGenerationClass(IndicatorGenerationBaseClass):
         self.updateClosingOrderCountIndicator()
 
     def updateIndicatorsForEma21AnalyserAlgorithm(self):
+        self.updateBollingerBandIndicator()
         self.updateEmaIndicator()
         self.updateEmaRetestIndicator()

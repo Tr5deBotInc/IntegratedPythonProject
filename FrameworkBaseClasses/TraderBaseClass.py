@@ -115,7 +115,7 @@ class TraderBaseClass(ProcessBaseClass):
                     CancelFailedBool = True
         return not CancelFailedBool
 
-    def placeClosingOrder(self, OrderSideStr):
+    def placeClosingOrder(self, OrderSideStr, IndicatorNameStr='SMA'):
         OrderParameterObj = {}
         OrderQuantityInt = format(abs(self.CurrentSystemVariables['CurrentAccountPositionSize']), '.8f')
         for iterator in range(0, Constant.RETRY_LIMIT):
@@ -126,7 +126,7 @@ class TraderBaseClass(ProcessBaseClass):
                         'side': OrderSideStr.upper(),
                         'type': 'LIMIT',
                         'quantity': OrderQuantityInt,
-                        'price': round(self.IndicatorsObj['SMA']['value']),
+                        'price': round(self.IndicatorsObj[IndicatorNameStr]['value']),
                         'sideEffectType': 'MARGIN_BUY',
                         'timeInForce': 'GTC',
                         'timestamp': str(round(time.time() * 1000))
@@ -137,12 +137,12 @@ class TraderBaseClass(ProcessBaseClass):
                         'limit',
                         OrderSideStr,
                         OrderQuantityInt,
-                        round(self.IndicatorsObj['SMA']['value']),
+                        round(self.IndicatorsObj[IndicatorNameStr]['value']),
                         OrderParameterObj
                     )
                 self.createOrderLog(
                     datetime.now(),
-                    round(self.IndicatorsObj['SMA']['value']),
+                    round(self.IndicatorsObj[IndicatorNameStr]['value']),
                     'close',
                     OrderSideStr,
                     OrderQuantityInt,
@@ -161,7 +161,7 @@ class TraderBaseClass(ProcessBaseClass):
                     + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
                     + ", 'limit'," +
                     OrderSideStr + "," + str(OrderQuantityInt) + ", " +
-                    str(round(self.IndicatorsObj['SMA']['value'])) + ")",
+                    str(round(self.IndicatorsObj[IndicatorNameStr]['value'])) + ")",
                     "NetworkError: " + str(ErrorMessage)
                 )
             except ccxt.ExchangeError as ErrorMessage:
@@ -174,7 +174,7 @@ class TraderBaseClass(ProcessBaseClass):
                     + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
                     + ", 'limit'," +
                     OrderSideStr + "," + str(OrderQuantityInt) + ", " +
-                    str(round(self.IndicatorsObj['SMA']['value'])) + ")",
+                    str(round(self.IndicatorsObj[IndicatorNameStr]['value'])) + ")",
                     "ExchangeError: " + str(ErrorMessage)
                 )
             except Exception as ErrorMessage:
@@ -187,7 +187,7 @@ class TraderBaseClass(ProcessBaseClass):
                     + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
                     + ", 'limit'," +
                     OrderSideStr + "," + str(OrderQuantityInt) + ", " +
-                    str(round(self.IndicatorsObj['SMA']['value'])) + ")",
+                    str(round(self.IndicatorsObj[IndicatorNameStr]['value'])) + ")",
                     "OtherError: " + str(ErrorMessage)
                 )
 
