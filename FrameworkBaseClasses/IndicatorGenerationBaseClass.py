@@ -165,20 +165,12 @@ class IndicatorGenerationBaseClass(ProcessBaseClass):
 
         LatestEmaValue = self.IndicatorsObj['EMA']['value']
         LatestCandleObj = self.CandleArr['FiveMinuteCandles'][len(self.CandleArr['FiveMinuteCandles'])-1]
-        if abs(self.CurrentSystemVariables['CurrentAccountPositionSize']) > 0:
-            if LatestCandleObj['low'] > LatestEmaValue and LatestCandleObj['high'] > LatestEmaValue:
-                CurrentMarketPlacementStr = 'above'
-            elif LatestCandleObj['low'] < LatestEmaValue and LatestCandleObj['high'] < LatestEmaValue:
-                CurrentMarketPlacementStr = 'below'
-            else:
-                CurrentMarketPlacementStr = 'all over'
+        if LatestCandleObj['open'] > LatestEmaValue and LatestCandleObj['close'] > LatestEmaValue:
+            CurrentMarketPlacementStr = 'above'
+        elif LatestCandleObj['open'] < LatestEmaValue and LatestCandleObj['close'] < LatestEmaValue:
+            CurrentMarketPlacementStr = 'below'
         else:
-            if LatestCandleObj['open'] > LatestEmaValue and LatestCandleObj['close'] > LatestEmaValue:
-                CurrentMarketPlacementStr = 'above'
-            elif LatestCandleObj['open'] < LatestEmaValue and LatestCandleObj['close'] < LatestEmaValue:
-                CurrentMarketPlacementStr = 'below'
-            else:
-                CurrentMarketPlacementStr = 'all over'
+            CurrentMarketPlacementStr = 'all over'
 
         if self.IndicatorsObj['EMA_RETEST']['prev_EMA'] is None:
             if CurrentMarketPlacementStr != 'all over':
