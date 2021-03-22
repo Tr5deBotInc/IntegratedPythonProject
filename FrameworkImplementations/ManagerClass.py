@@ -42,22 +42,25 @@ class ManagerClass(ManagerBaseClass):
     def __init__(self):
         # print("Manager Class Constructor")
         super().__init__()
+        if self.SystemVariablesObj['SystemState'] == 'Passive':
+            return
+
         self.initializeProcessObjects()
 
-        self.initiateStartingTimer()
-
+        if not self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_WEBHOOK]:
+            self.initiateStartingTimer()
         self.startProcessThreading()
 
     def initializeProcessObjects(self):
         # print("Initializing Process Objects")
         AlgorithmNameStr = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_ALGORITHM_NAME_INDEX]
 
-        IndicatorGenerationObj = IndicatorGenerationClass()
-        IndicatorGenerationObj.setAlgorithmConfigurationObj(self.AlgorithmConfigurationObj)
-        IndicatorGenerationObj.setExchangeConnectionObj(self.ExchangeConnectionObj)
-        IndicatorGenerationObj.setDatabaseConnectionDetailsObj(self.DatabaseConnectionDetails)
-        IndicatorGenerationObj.setSystemVariables(self.SystemVariablesObj)
-        IndicatorGenerationObj.setIndicators({
+        self.IndicatorGenerationObj = IndicatorGenerationClass()
+        self.IndicatorGenerationObj.setAlgorithmConfigurationObj(self.AlgorithmConfigurationObj)
+        self.IndicatorGenerationObj.setExchangeConnectionObj(self.ExchangeConnectionObj)
+        self.IndicatorGenerationObj.setDatabaseConnectionDetailsObj(self.DatabaseConnectionDetails)
+        self.IndicatorGenerationObj.setSystemVariables(self.SystemVariablesObj)
+        self.IndicatorGenerationObj.setIndicators({
             'BB': self.BollingerBandObj,
             'RSI': self.RsiBandObj,
             'SMA': self.CurrentSimpleMovingAverageFloat,
@@ -66,17 +69,17 @@ class ManagerClass(ManagerBaseClass):
             'COC': self.CloseOrderCountObj,
             'TimeStamp': self.IndicatorTimeStampObj
         })
-        IndicatorGenerationObj.setCandleArr({
+        self.IndicatorGenerationObj.setCandleArr({
             'FiveMinuteCandles': self.FiveMinCandleArr
         })
 
-        RiskManagementObj = RiskManagementClass()
-        RiskManagementObj.setAlgorithmConfigurationObj(self.AlgorithmConfigurationObj)
-        RiskManagementObj.setExchangeConnectionObj(self.ExchangeConnectionObj)
-        RiskManagementObj.setDatabaseConnectionDetailsObj(self.DatabaseConnectionDetails)
-        RiskManagementObj.setSystemVariables(self.SystemVariablesObj)
-        RiskManagementObj.setExchangeConnectionDetailsObj(self.ExchangeConnectionDetails)
-        RiskManagementObj.setIndicators({
+        self.RiskManagementObj = RiskManagementClass()
+        self.RiskManagementObj.setAlgorithmConfigurationObj(self.AlgorithmConfigurationObj)
+        self.RiskManagementObj.setExchangeConnectionObj(self.ExchangeConnectionObj)
+        self.RiskManagementObj.setDatabaseConnectionDetailsObj(self.DatabaseConnectionDetails)
+        self.RiskManagementObj.setSystemVariables(self.SystemVariablesObj)
+        self.RiskManagementObj.setExchangeConnectionDetailsObj(self.ExchangeConnectionDetails)
+        self.RiskManagementObj.setIndicators({
             'BB': self.BollingerBandObj,
             'RSI': self.RsiBandObj,
             'SMA': self.CurrentSimpleMovingAverageFloat,
@@ -86,11 +89,11 @@ class ManagerClass(ManagerBaseClass):
             'TimeStamp': self.IndicatorTimeStampObj
         })
 
-        TraderObj = TraderClass()
-        TraderObj.setExchangeConnectionObj(self.ExchangeConnectionObj)
-        TraderObj.setAlgorithmConfigurationObj(self.AlgorithmConfigurationObj)
-        TraderObj.setExchangeConnectionDetailsObj(self.ExchangeConnectionDetails)
-        TraderObj.setIndicators({
+        self.TraderObj = TraderClass()
+        self.TraderObj.setExchangeConnectionObj(self.ExchangeConnectionObj)
+        self.TraderObj.setAlgorithmConfigurationObj(self.AlgorithmConfigurationObj)
+        self.TraderObj.setExchangeConnectionDetailsObj(self.ExchangeConnectionDetails)
+        self.TraderObj.setIndicators({
             'BB': self.BollingerBandObj,
             'RSI': self.RsiBandObj,
             'SMA': self.CurrentSimpleMovingAverageFloat,
@@ -99,22 +102,29 @@ class ManagerClass(ManagerBaseClass):
             'COC': self.CloseOrderCountObj,
             'TimeStamp': self.IndicatorTimeStampObj
         })
-        TraderObj.setSystemVariables(self.SystemVariablesObj)
-        TraderObj.setDatabaseConnectionDetailsObj(self.DatabaseConnectionDetails)
+        self.TraderObj.setSystemVariables(self.SystemVariablesObj)
+        self.TraderObj.setDatabaseConnectionDetailsObj(self.DatabaseConnectionDetails)
 
         if AlgorithmNameStr == Constant.PRICE_DATA_GENERATION_BASE_VERSION:
             self.ThreadInstantiationArr = [
-                {'ProcessObj': TraderObj, 'IntervalInt': 1},
+                {'ProcessObj': self.TraderObj, 'IntervalInt': 1},
                 {'ProcessObj': self, 'IntervalInt': 1}
             ]
         else:
             IndicatorGenerationIntervalInt = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_INDICATOR_CANDLE_DURATION_INDEX] * 60
-            self.ThreadInstantiationArr = [
-                {'ProcessObj': IndicatorGenerationObj, 'IntervalInt': IndicatorGenerationIntervalInt},
-                {'ProcessObj': RiskManagementObj, 'IntervalInt': 15},
-                {'ProcessObj': TraderObj, 'IntervalInt': 10},
-                {'ProcessObj': self, 'IntervalInt': 3}
-            ]
+
+            if not self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_WEBHOOK]:
+                self.ThreadInstantiationArr = [
+                    {'ProcessObj': self.IndicatorGenerationObj, 'IntervalInt': IndicatorGenerationIntervalInt},
+                    {'ProcessObj': self.RiskManagementObj, 'IntervalInt': 15},
+                    {'ProcessObj': self.TraderObj, 'IntervalInt': 10},
+                    {'ProcessObj': self, 'IntervalInt': 6}
+                ]
+            else:
+                self.ThreadInstantiationArr = [
+                    {'ProcessObj': self.RiskManagementObj, 'IntervalInt': 15},
+                    {'ProcessObj': self, 'IntervalInt': 6}
+                ]
 
     def initializeSystemData(self):
         # print('Initializing system data')
@@ -229,6 +239,11 @@ class ManagerClass(ManagerBaseClass):
         self.getCurrentPrice()
         self.getCurrentBalance()
         self.getCurrentPosition()
+        self.createAlgorithmSnapshot(
+            self.SystemVariablesObj['CurrentPortfolioValue'],
+            self.SystemVariablesObj['CurrentAccountPositionSize'],
+            datetime.now(),
+        )
 
     def initiateStartingTimer(self):
         # region Making sure system starts at the beginning of 5 minutes
@@ -247,3 +262,41 @@ class ManagerClass(ManagerBaseClass):
         sleep_time = (next_run - now).total_seconds()
         time.sleep(sleep_time)
         # endregion
+
+    def updateSystemVariablesForWebhook(self):
+        self.getCurrentPrice()
+        self.getCurrentBalance()
+        self.getCurrentPosition()
+
+    def initializeTraderObjForWebhook(self):
+        TraderObj = TraderClass()
+        TraderObj.setSystemVariables(self.SystemVariablesObj)
+        TraderObj.setExchangeConnectionObj(self.ExchangeConnectionObj)
+        TraderObj.setAlgorithmConfigurationObj(self.AlgorithmConfigurationObj)
+        TraderObj.setExchangeConnectionDetailsObj(self.ExchangeConnectionDetails)
+        TraderObj.setDatabaseConnectionDetailsObj(self.DatabaseConnectionDetails)
+        return TraderObj
+
+    def verifyPayload(self, PayloadObj):
+        VerificationArr = ['ApiSecret', 'ApiKey', 'TradeDirection', 'TradeType', 'Price', 'Borrow']
+
+        for RequiredAttribute in VerificationArr:
+            if PayloadObj[RequiredAttribute] is None:
+                print('Payload failed verification')
+                return False
+        return True
+
+    def processPlaceTradeApiRequest(self, PayloadObj):
+        if not self.verifyPayload(PayloadObj) or not self.authenticateWebhookRequest(PayloadObj):
+            print('Api call authentication failed')
+            return
+
+        self.updateSystemVariablesForWebhook()
+
+        TraderObj = self.initializeTraderObjForWebhook()
+
+        if PayloadObj['TradeType'] == 'MARKET':
+            TraderObj.genericPlaceMarketTrade(PayloadObj)
+        else:
+            TraderObj.genericPlaceLimitTrade(PayloadObj)
+
