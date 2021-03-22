@@ -146,8 +146,6 @@ class TraderBaseClass(ProcessBaseClass):
                     'close',
                     OrderSideStr,
                     OrderQuantityInt,
-                    self.CurrentSystemVariables['CurrentPortfolioValue'],
-                    self.CurrentSystemVariables['CurrentAccountPositionSize'],
                     self.CurrentSystemVariables['TradingState']
                 )
                 break
@@ -223,8 +221,6 @@ class TraderBaseClass(ProcessBaseClass):
                     'open',
                     OrderSideStr,
                     OrderQuantityInt,
-                    self.CurrentSystemVariables['CurrentPortfolioValue'],
-                    self.CurrentSystemVariables['CurrentAccountPositionSize'],
                     self.CurrentSystemVariables['TradingState']
                 )
                 break
@@ -292,8 +288,6 @@ class TraderBaseClass(ProcessBaseClass):
                     'open',
                     OrderSideStr,
                     OrderQuantityInt,
-                    self.CurrentSystemVariables['CurrentPortfolioValue'],
-                    self.CurrentSystemVariables['CurrentAccountPositionSize'],
                     self.CurrentSystemVariables['TradingState']
                 )
                 break
@@ -371,8 +365,6 @@ class TraderBaseClass(ProcessBaseClass):
                     'market',
                     OrderSideStr,
                     QuantityInt,
-                    self.CurrentSystemVariables['CurrentPortfolioValue'],
-                    self.CurrentSystemVariables['CurrentAccountPositionSize'],
                     self.CurrentSystemVariables['TradingState']
                 )
 
@@ -481,3 +473,148 @@ class TraderBaseClass(ProcessBaseClass):
             return False
 
         return True
+
+    def genericPlaceLimitTrade(self, PayloadObj):
+        # region Handling actions based on the trading state of the algorithm
+        # trading state is managed by the risk management thread
+        if not self.checkTradingState():
+            return
+        # endregion
+
+        OrderQuantityInt = format(self.getOrderQuantity(), '.6f')
+
+        if PayloadObj['Borrow']:
+            SideEffectStr = 'MARGIN_BUY'
+        else:
+            SideEffectStr = 'NO_SIDE_EFFECT'
+
+        for iterator in range(0, Constant.RETRY_LIMIT):
+            try:
+                self.ExchangeConnectionObj.sapi_post_margin_order({
+                    'symbol': self.AlgorithmConfigurationObj[
+                        Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX].replace('/', ''),
+                    'side': PayloadObj['TradeDirection'],
+                    'type': PayloadObj['TradeType'],
+                    'quantity': OrderQuantityInt,
+                    'price': PayloadObj['Price'],
+                    'sideEffectType': SideEffectStr,
+                    'timeInForce': 'GTC',
+                    'timestamp': str(round(time.time() * 1000))
+                })
+
+                self.createOrderLog(
+                    datetime.now(),
+                    PayloadObj['Price'],
+                    'N/A',
+                    PayloadObj['TradeDirection'],
+                    OrderQuantityInt,
+                    'N/A'
+                )
+                break
+            except ccxt.NetworkError as ErrorMessage:
+                if iterator != Constant.RETRY_LIMIT - 1:
+                    continue
+                self.createExchangeInteractionLog(
+                    self.ProcessName,
+                    datetime.now(),
+                    "create_order("
+                    + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
+                    + ", " + PayloadObj['TradeType'] + ", " + PayloadObj['TradeDirection'] + ", "
+                    + str(OrderQuantityInt) + "," + PayloadObj['Price'] + ")",
+                    "NetworkError: " + str(ErrorMessage)
+                )
+            except ccxt.ExchangeError as ErrorMessage:
+                if iterator != Constant.RETRY_LIMIT - 1:
+                    continue
+                self.createExchangeInteractionLog(
+                    self.ProcessName,
+                    datetime.now(),
+                    "create_order("
+                    + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
+                    + ", " + PayloadObj['TradeType'] + ", " + PayloadObj['TradeDirection'] + ", "
+                    + str(OrderQuantityInt) + "," + PayloadObj['Price'] + ")",
+                    "ExchangeError: " + str(ErrorMessage)
+                )
+            except Exception as ErrorMessage:
+                if iterator != Constant.RETRY_LIMIT - 1:
+                    continue
+                self.createExchangeInteractionLog(
+                    self.ProcessName,
+                    datetime.now(),
+                    "create_order("
+                    + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
+                    + ", " + PayloadObj['TradeType'] + ", " + PayloadObj['TradeDirection'] + ", "
+                    + str(OrderQuantityInt) + "," + PayloadObj['Price'] + ")",
+                    "OtherError: " + str(ErrorMessage)
+                )
+
+    def genericPlaceMarketTrade(self, PayloadObj):
+        # region Handling actions based on the trading state of the algorithm
+        # trading state is managed by the risk management thread
+        if not self.checkTradingState():
+            return
+        # endregion
+
+        OrderQuantityInt = format(self.getOrderQuantity(), '.6f')
+
+        if PayloadObj['Borrow']:
+            SideEffectStr = 'MARGIN_BUY'
+        else:
+            SideEffectStr = 'NO_SIDE_EFFECT'
+
+        for iterator in range(0, Constant.RETRY_LIMIT):
+            try:
+                self.ExchangeConnectionObj.sapi_post_margin_order({
+                    'symbol': self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX].replace('/', ''),
+                    'side': PayloadObj['TradeDirection'],
+                    'type': PayloadObj['TradeType'],
+                    'quantity': OrderQuantityInt,
+                    'sideEffectType': SideEffectStr,
+                    'timestamp': str(round(time.time() * 1000))
+                })
+
+                self.createOrderLog(
+                    datetime.now(),
+                    PayloadObj['Price'],
+                    'N/A',
+                    PayloadObj['TradeDirection'],
+                    OrderQuantityInt,
+                    'N/A'
+                )
+                break
+            except ccxt.NetworkError as ErrorMessage:
+                if iterator != Constant.RETRY_LIMIT-1:
+                    continue
+                self.createExchangeInteractionLog(
+                    self.ProcessName,
+                    datetime.now(),
+                    "create_order("
+                    + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
+                    + ", " + PayloadObj['TradeType'] + ", " + PayloadObj['TradeDirection'] + ", "
+                    + str(OrderQuantityInt) + "," + PayloadObj['Price'] + ")",
+                    "NetworkError: " + str(ErrorMessage)
+                )
+            except ccxt.ExchangeError as ErrorMessage:
+                if iterator != Constant.RETRY_LIMIT-1:
+                    continue
+                self.createExchangeInteractionLog(
+                    self.ProcessName,
+                    datetime.now(),
+                    "create_order("
+                    + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
+                    + ", " + PayloadObj['TradeType'] + ", " + PayloadObj['TradeDirection'] + ", "
+                    + str(OrderQuantityInt) + "," + PayloadObj['Price'] + ")",
+                    "ExchangeError: " + str(ErrorMessage)
+                )
+            except Exception as ErrorMessage:
+                if iterator != Constant.RETRY_LIMIT-1:
+                    continue
+                self.createExchangeInteractionLog(
+                    self.ProcessName,
+                    datetime.now(),
+                    "create_order("
+                    + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
+                    + ", " + PayloadObj['TradeType'] + ", " + PayloadObj['TradeDirection'] + ", "
+                    + str(OrderQuantityInt) + "," + PayloadObj['Price'] + ")",
+                    "OtherError: " + str(ErrorMessage)
+                )

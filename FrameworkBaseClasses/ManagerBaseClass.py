@@ -24,13 +24,14 @@ class ManagerBaseClass(ProcessBaseClass):
         'TradingState': None
     }
 
-    BaseCurrency = 'USDT'
+    IndicatorGenerationObj = None
+    RiskManagementObj = None
+    TraderObj = None
 
     def __init__(self):
         # print("Manager Base Class Constructor")
         # print(dir(ccxt.binance()))  # Used to display all the api endpoints available on the exchange
         self.requestProjectInitiationState()
-        self.initializeSystemData()
 
     def startProcessThreading(self):
         # print("start Process Threading")
@@ -83,13 +84,12 @@ class ManagerBaseClass(ProcessBaseClass):
 
     def requestProjectInitiationState(self):
         # print("request Project Initiation State")
-        SystemStateInputStr = input("Please provide the system state:\n1. Active\n2. Testing\n3. Backtesting\nInput: ")
+        SystemStateInputStr = input("Please provide the system state:\n1. Active\n2. Passive\nInput: ")
         if SystemStateInputStr.strip() == '1':
             self.setSystemState("Active")
+            self.initializeSystemData()
         elif SystemStateInputStr.strip() == '2':
-            self.setSystemState("Testing")
-        elif SystemStateInputStr.strip() == '3':
-            self.setSystemState("Backtesting")
+            self.setSystemState("Passive")
         else:
             print("Invalid selection")
             SystemObj.exit()
@@ -110,6 +110,24 @@ class ManagerBaseClass(ProcessBaseClass):
 
         elif SystemStateStr == 'Backtesting':
             pass
+
+        elif SystemStateStr == 'Passive':
+            self.DatabaseConnectionDetails['ServerName'] = EnvironmentDetails.MULTIPLE_ALGORITHM_HOST
+            self.DatabaseConnectionDetails['DatabaseName'] = EnvironmentDetails.MULTIPLE_ALGORITHM_DATABASE
+            self.DatabaseConnectionDetails['UserName'] = EnvironmentDetails.MULTIPLE_ALGORITHM_USER
+            self.DatabaseConnectionDetails['Password'] = EnvironmentDetails.MULTIPLE_ALGORITHM_PASSWORD
+
+    def authenticateWebhookRequest(self, PayloadObj):
+        ResultObj = self.getWebhookObj(PayloadObj['ApiSecret'], PayloadObj['ApiKey'])
+        if len(ResultObj) < 1:
+            return False
+        WebhookObj = ResultObj[0]
+        AlgorithmConfigurationObjId = WebhookObj[Constant.WEBHOOK_SETUP_ALGORITHM_CONFIGURATION_INDEX]
+        self.AlgorithmConfigurationObj = self.getAlgorithmConfigurationObj(None, AlgorithmConfigurationObjId)
+        self.setExchangeConnection()
+        if self.AlgorithmConfigurationObj is None:
+            return False
+        return True
 
     def setExchangeConnection(self):
         # print("set Exchange Connection")
@@ -193,6 +211,9 @@ class ManagerBaseClass(ProcessBaseClass):
                 )
 
     def getCurrentBalance(self):
+        TradingPairSymbolStr = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
+        PairSplitIndexInt = TradingPairSymbolStr.find('/')
+        MarginBaseCurrencyStr = TradingPairSymbolStr[PairSplitIndexInt+1:]
         BalanceObj = None
         for iterator in range(0, Constant.RETRY_LIMIT):
             try:
@@ -232,7 +253,7 @@ class ManagerBaseClass(ProcessBaseClass):
         if self.ExchangeConnectionDetails['ExchangeName'] == Constant.BINANCE_EXCHANGE_ID:
             self.SystemVariablesObj['CurrentPortfolioValue'] = float(BalanceObj['info']['totalNetAssetOfBtc']) * self.SystemVariablesObj['CurrentPrice']
             for AssetObj in BalanceObj['info']['userAssets']:
-                if AssetObj['asset'] == self.BaseCurrency:
+                if AssetObj['asset'] == MarginBaseCurrencyStr:
                     self.SystemVariablesObj['CurrentAccountBalance'] = AssetObj['free']
                     return
         elif self.ExchangeConnectionDetails['ExchangeName'] == Constant.BITMEX_EXCHANGE_ID:
@@ -302,16 +323,38 @@ class ManagerBaseClass(ProcessBaseClass):
             return
         return AlgorithmNameArr
 
-    def getAlgorithmConfigurationObj(self, AlgorithmNameStr):
+    def getAlgorithmConfigurationObj(self, AlgorithmConfigurationNameStr=None, AlgorithmConfigurationId=None):
         # print("get Algorithm Configuration Object")
-        QueryStr = """Select * From AlgorithmConfiguration WHERE AlgorithmName = %s"""
+        if AlgorithmConfigurationNameStr is None and AlgorithmConfigurationId is None:
+            return
+        elif AlgorithmConfigurationId is None:
+            QueryStr = """Select * From AlgorithmConfiguration WHERE AlgorithmName = %s"""
+            QueryData = (
+                AlgorithmConfigurationNameStr,
+            )
+        else:
+            QueryStr = """Select * From AlgorithmConfiguration WHERE Id = %s"""
+            QueryData = (
+                AlgorithmConfigurationId,
+            )
 
-        QueryData = (
-            AlgorithmNameStr,
-        )
 
         AlgorithmConfigurationObj = self.templateDatabaseRetriever(QueryStr, QueryData, "getAlgorithmConfigurationObj")
         if AlgorithmConfigurationObj is None:
             return
         return AlgorithmConfigurationObj[0]
+    # endregion
+
+    # region Functions used to retrieve information from the database
+    def getWebhookObj(self, ApiSecretStr, ApiKeyStr):
+        # print("get Webhook Obj")
+        QueryStr = """Select * From WebhookSetup Where ApiSecret = %s And ApiKey = %s"""
+
+        QueryData = (
+            ApiSecretStr,
+            ApiKeyStr,
+        )
+
+        return self.templateDatabaseRetriever(QueryStr, QueryData, "getAlgorithmTradingState")
+
     # endregion

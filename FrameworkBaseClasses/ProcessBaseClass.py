@@ -273,13 +273,12 @@ class ProcessBaseClass:
 
         self.templateDatabaseLogger(QueryStr, QueryData, "createPriceLogEntry")
 
-    def createOrderLog(self, EntryDateTimeObj, OrderPriceFloat, OrderActionStr, OrderDirectionStr, OrderQuantityInt,
-                       PortfolioValueFloat, PositionSizeFloat, TradingState):
+    def createOrderLog(self, EntryDateTimeObj, OrderPriceFloat, OrderActionStr, OrderDirectionStr, OrderQuantityInt, TradingState):
         SelectedAlgorithmId = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_ID_INDEX]
 
-        QueryStr = """INSERT INTO OrderLog (EntryTime, OrderPrice, OrderAction, OrderDirection, OrderQuantity, PortfolioValue, AlgorithmConfiguration, PositionSize, TradingState)
+        QueryStr = """INSERT INTO OrderLog (EntryTime, OrderPrice, OrderAction, OrderDirection, OrderQuantity, AlgorithmConfiguration, TradingState)
                                                VALUES
-                                               (%s, %s, %s, %s, %s, %s, %s, %s, %s)"""
+                                               (%s, %s, %s, %s, %s, %s, %s)"""
 
         QueryData = (
             EntryDateTimeObj,
@@ -287,12 +286,23 @@ class ProcessBaseClass:
             OrderActionStr,
             OrderDirectionStr,
             str(OrderQuantityInt),
-            PortfolioValueFloat,
             SelectedAlgorithmId,
-            PositionSizeFloat,
             TradingState,
         )
         self.templateDatabaseLogger(QueryStr, QueryData, "createOrderLog")
+
+    def createAlgorithmSnapshot(self, PortfolioValueFloat, PositionSizeFloat, EntryTimeObj):
+        SelectedAlgorithmId = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_ID_INDEX]
+        QueryStr = """INSERT INTO AlgorithmSnapshot (PortfolioValue, PositionSize, EntryTime)
+                                                       VALUES
+                                                       (%s, %s, %s)"""
+        QueryData = (
+            PortfolioValueFloat,
+            PositionSizeFloat,
+            EntryTimeObj,
+        )
+        self.templateDatabaseLogger(QueryStr, QueryData, "createAlgorithmSnapshot")
+        pass
 
     # endregion
 
