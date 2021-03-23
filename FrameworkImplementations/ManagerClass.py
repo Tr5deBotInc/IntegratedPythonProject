@@ -111,9 +111,9 @@ class ManagerClass(ManagerBaseClass):
                 {'ProcessObj': self, 'IntervalInt': 1}
             ]
         else:
-            IndicatorGenerationIntervalInt = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_INDICATOR_CANDLE_DURATION_INDEX] * 60
 
             if not self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_WEBHOOK]:
+                IndicatorGenerationIntervalInt = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_INDICATOR_CANDLE_DURATION_INDEX] * 60
                 self.ThreadInstantiationArr = [
                     {'ProcessObj': self.IndicatorGenerationObj, 'IntervalInt': IndicatorGenerationIntervalInt},
                     {'ProcessObj': self.RiskManagementObj, 'IntervalInt': 15},

@@ -80,6 +80,9 @@ class ManagerBaseClass(ProcessBaseClass):
                 self.getAlgorithmConfigurationObj(AlgorithmNameArr[int(SelectedAlgorithmNameInputStr) - 1][0])
             self.SystemVariablesObj['AlgorithmId'] = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_ALGORITHM_NAME_INDEX]
             self.SystemVariablesObj['TradingState'] = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_STATE_INDEX]
+
+            if not self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_WEBHOOK]:
+                self.initializeSystemData()
         self.setExchangeConnection()
 
     def requestProjectInitiationState(self):
@@ -87,7 +90,6 @@ class ManagerBaseClass(ProcessBaseClass):
         SystemStateInputStr = input("Please provide the system state:\n1. Active\n2. Passive\nInput: ")
         if SystemStateInputStr.strip() == '1':
             self.setSystemState("Active")
-            self.initializeSystemData()
         elif SystemStateInputStr.strip() == '2':
             self.setSystemState("Passive")
         else:
