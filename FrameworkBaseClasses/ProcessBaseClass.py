@@ -293,13 +293,14 @@ class ProcessBaseClass:
 
     def createAlgorithmSnapshot(self, PortfolioValueFloat, PositionSizeFloat, EntryTimeObj):
         SelectedAlgorithmId = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_ID_INDEX]
-        QueryStr = """INSERT INTO AlgorithmSnapshot (PortfolioValue, PositionSize, EntryTime)
+        QueryStr = """INSERT INTO AlgorithmSnapshot (PortfolioValue, PositionSize, EntryTime, AlgorithmConfiguration)
                                                        VALUES
-                                                       (%s, %s, %s)"""
+                                                       (%s, %s, %s, %s)"""
         QueryData = (
             PortfolioValueFloat,
             PositionSizeFloat,
             EntryTimeObj,
+            SelectedAlgorithmId,
         )
         self.templateDatabaseLogger(QueryStr, QueryData, "createAlgorithmSnapshot")
         pass
