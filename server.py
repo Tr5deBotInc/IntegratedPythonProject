@@ -31,7 +31,6 @@ def print_test():
     containing the necessary information to authenticate and execute the request
     """
     payload = request.get_json(request)
-    print(payload)
     ManagerClassObj.processPlaceTradeApiRequest(payload)
     return ("", 200, None)
 
