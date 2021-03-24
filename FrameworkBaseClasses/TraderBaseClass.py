@@ -510,6 +510,7 @@ class TraderBaseClass(ProcessBaseClass):
                     OrderQuantityInt,
                     'N/A'
                 )
+                print('Limit Trade Placed')
                 break
             except ccxt.NetworkError as ErrorMessage:
                 if iterator != Constant.RETRY_LIMIT - 1:
@@ -581,6 +582,7 @@ class TraderBaseClass(ProcessBaseClass):
                     OrderQuantityInt,
                     'N/A'
                 )
+                print('Market Trade Placed')
                 break
             except ccxt.NetworkError as ErrorMessage:
                 if iterator != Constant.RETRY_LIMIT-1:

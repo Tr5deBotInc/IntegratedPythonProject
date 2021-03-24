@@ -292,7 +292,7 @@ class ManagerClass(ManagerBaseClass):
             return
 
         self.updateSystemVariablesForWebhook()
-
+        print('System Variables Updated')
         TraderObj = self.initializeTraderObjForWebhook()
 
         if PayloadObj['TradeType'] == 'MARKET':
