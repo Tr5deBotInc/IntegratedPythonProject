@@ -272,9 +272,11 @@ class ManagerBaseClass(ProcessBaseClass):
                     BinanceAssetObjArr = self.ExchangeConnectionObj.fetchBalance()['info']['userAssets']
                     for BinanceAssetObj in BinanceAssetObjArr:
                         if BinanceAssetObj['asset'] == MarginTradingCurrencyStr:
-                            if float(BinanceAssetObj['netAsset']) * float(self.SystemVariablesObj['CurrentPrice']) > 11:
+                            print(BinanceAssetObj)
+                            print(self.SystemVariablesObj['CurrentPrice'])
+                            if float(BinanceAssetObj['netAsset']) * float(self.SystemVariablesObj['CurrentPrice']) > 10:
                                 self.SystemVariablesObj['CurrentAccountPositionSize'] = ProjectFunctions.truncateFloat(abs(float(BinanceAssetObj['netAsset'])), 6)
-                            elif float(BinanceAssetObj['netAsset']) * float(self.SystemVariablesObj['CurrentPrice']) < -11:
+                            elif float(BinanceAssetObj['netAsset']) * float(self.SystemVariablesObj['CurrentPrice']) < -10:
                                 self.SystemVariablesObj['CurrentAccountPositionSize'] = ProjectFunctions.truncateFloat(-abs(float(BinanceAssetObj['netAsset'])), 6)
                             else:
                                 self.SystemVariablesObj['CurrentAccountPositionSize'] = 0

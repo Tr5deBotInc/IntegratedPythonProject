@@ -278,12 +278,30 @@ class ManagerClass(ManagerBaseClass):
         return TraderObj
 
     def verifyPayload(self, PayloadObj):
-        VerificationArr = ['ApiSecret', 'ApiKey', 'TradeDirection', 'TradeType', 'Price', 'Borrow']
+        VerificationArr = ['ApiSecret', 'ApiKey', 'TradeAction', 'TradeDirection', 'TradeType', 'Price', 'SideEffect']
 
         for RequiredAttribute in VerificationArr:
-            if PayloadObj[RequiredAttribute] is None:
-                print('Payload failed verification')
+            try:
+                if PayloadObj[RequiredAttribute] is None:
+                    print('Payload failed verification')
+                    return False
+            except Exception as ErrorMessage:
+                print('Payload failed verification: ' + str(ErrorMessage))
                 return False
+        return True
+
+    def testTradeTiming(self, PayloadObj, TraderObj):
+        if PayloadObj['TradeAction'] == 'close' and self.SystemVariablesObj['CurrentAccountPositionSize'] == 0:
+            print('Received order request in incorrect order! No action performed.')
+            self.createProcessExecutionLog(self.ProcessName, datetime.now(), 'Process Failed: received order request in incorrect order! No action performed.')
+            return False
+        elif PayloadObj['TradeAction'] == 'open' and self.SystemVariablesObj['CurrentAccountPositionSize'] != 0:
+            print('Received order request in incorrect order! Closed position.')
+            self.createProcessExecutionLog(self.ProcessName, datetime.now(), 'Process Failed: received order request in incorrect order! Closed position.')
+            if self.SystemVariablesObj['CurrentAccountPositionSize'] > 0:
+                TraderObj.placeMarketOrder('sell')
+            else:
+                TraderObj.placeMarketOrder('buy')
         return True
 
     def processPlaceTradeApiRequest(self, PayloadObj):
@@ -294,6 +312,9 @@ class ManagerClass(ManagerBaseClass):
         self.updateSystemVariablesForWebhook()
         print('System Variables Updated')
         TraderObj = self.initializeTraderObjForWebhook()
+
+        if not self.testTradeTiming(PayloadObj, TraderObj):
+            return
 
         if PayloadObj['TradeType'] == 'MARKET':
             TraderObj.genericPlaceMarketTrade(PayloadObj)
