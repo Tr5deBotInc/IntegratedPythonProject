@@ -30,7 +30,7 @@ class TraderClass(TraderBaseClass):
     def bbRsiTradingAlgorithm(self):
         self.OpenOrderCountInt = self.countOpenOrders()
         if self.OpenOrderCountInt is False:
-            self.createProcessExecutionLog(self.ProcessName, datetime.now(),
+            self.createProcessExecutionLog(self.ProcessName, datetime.utcnow(),
                                            "Process Update: Not executing trading functionality due to issues with"
                                            " getting Order Count or Position Count")
             return
@@ -79,7 +79,7 @@ class TraderClass(TraderBaseClass):
     def bbRsiTradingAlgorithmImproved(self):
         self.OpenOrderCountInt = self.countOpenOrders()
         if self.OpenOrderCountInt is False:
-            self.createProcessExecutionLog(self.ProcessName, datetime.now(),
+            self.createProcessExecutionLog(self.ProcessName, datetime.utcnow(),
                                            "Process Update: Not executing trading functionality due to issues with"
                                            " getting Order Count or Position Count")
             return
@@ -152,7 +152,7 @@ class TraderClass(TraderBaseClass):
                 elif self.CurrentSystemVariables['CurrentPrice'] < self.IndicatorsObj['SMA']['value']:
                     self.placeMarketOrder('sell', PositionSizeFloat, True)
         else:
-            self.createProcessExecutionLog(self.ProcessName, datetime.now(), "Process Failed: In bbRsiTradingAlgorithmImproved encountered undefined Trading State: " + CurrentTradingStateStr)
+            self.createProcessExecutionLog(self.ProcessName, datetime.utcnow(), "Process Failed: In bbRsiTradingAlgorithmImproved encountered undefined Trading State: " + CurrentTradingStateStr)
         # endregion
 
     def ema21AnalyzerAlgorithm(self):

@@ -46,7 +46,7 @@ class TraderBaseClass(ProcessBaseClass):
                     continue
                 self.createExchangeInteractionLog(
                     self.ProcessName,
-                    datetime.now(),
+                    datetime.utcnow(),
                     "fetch_open_orders("
                     + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
                     + ")", "NetworkError: " + str(ErrorMessage)
@@ -56,7 +56,7 @@ class TraderBaseClass(ProcessBaseClass):
                     continue
                 self.createExchangeInteractionLog(
                     self.ProcessName,
-                    datetime.now(),
+                    datetime.utcnow(),
                     "fetch_open_orders("
                     + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
                     + ")", "ExchangeError: " + str(ErrorMessage)
@@ -66,7 +66,7 @@ class TraderBaseClass(ProcessBaseClass):
                     continue
                 self.createExchangeInteractionLog(
                     self.ProcessName,
-                    datetime.now(),
+                    datetime.utcnow(),
                     "fetch_open_orders("
                     + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
                     + ")", "OtherError: " + str(ErrorMessage)
@@ -88,7 +88,7 @@ class TraderBaseClass(ProcessBaseClass):
                         continue
                     self.createExchangeInteractionLog(
                         self.ProcessName,
-                        datetime.now(),
+                        datetime.utcnow(),
                         "cancel_order(" + CurrentOrder['id'] + ")",
                         "NetworkError: " + str(ErrorMessage)
                     )
@@ -98,7 +98,7 @@ class TraderBaseClass(ProcessBaseClass):
                         continue
                     self.createExchangeInteractionLog(
                         self.ProcessName,
-                        datetime.now(),
+                        datetime.utcnow(),
                         "cancel_order(" + CurrentOrder['id'] + ")",
                         "ExchangeError: " + str(ErrorMessage)
                     )
@@ -108,7 +108,7 @@ class TraderBaseClass(ProcessBaseClass):
                         continue
                     self.createExchangeInteractionLog(
                         self.ProcessName,
-                        datetime.now(),
+                        datetime.utcnow(),
                         "cancel_order(" + CurrentOrder['id'] + ")",
                         "OtherError: " + str(ErrorMessage)
                     )
@@ -141,7 +141,7 @@ class TraderBaseClass(ProcessBaseClass):
                         OrderParameterObj
                     )
                 self.createOrderLog(
-                    datetime.now(),
+                    datetime.utcnow(),
                     round(self.IndicatorsObj[IndicatorNameStr]['value']),
                     'close',
                     OrderSideStr,
@@ -154,7 +154,7 @@ class TraderBaseClass(ProcessBaseClass):
                     continue
                 self.createExchangeInteractionLog(
                     self.ProcessName,
-                    datetime.now(),
+                    datetime.utcnow(),
                     "create_order("
                     + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
                     + ", 'limit'," +
@@ -167,7 +167,7 @@ class TraderBaseClass(ProcessBaseClass):
                     continue
                 self.createExchangeInteractionLog(
                     self.ProcessName,
-                    datetime.now(),
+                    datetime.utcnow(),
                     "create_order("
                     + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
                     + ", 'limit'," +
@@ -180,7 +180,7 @@ class TraderBaseClass(ProcessBaseClass):
                     continue
                 self.createExchangeInteractionLog(
                     self.ProcessName,
-                    datetime.now(),
+                    datetime.utcnow(),
                     "create_order("
                     + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
                     + ", 'limit'," +
@@ -216,7 +216,7 @@ class TraderBaseClass(ProcessBaseClass):
                         round(max(UpperLimitArr))
                     )
                 self.createOrderLog(
-                    datetime.now(),
+                    datetime.utcnow(),
                     round(max(UpperLimitArr)),
                     'open',
                     OrderSideStr,
@@ -229,7 +229,7 @@ class TraderBaseClass(ProcessBaseClass):
                     continue
                 self.createExchangeInteractionLog(
                     self.ProcessName,
-                    datetime.now(),
+                    datetime.utcnow(),
                     "create_order("
                     + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
                     + ", 'limit', 'sell', " + str(OrderQuantityInt) + "," +
@@ -241,7 +241,7 @@ class TraderBaseClass(ProcessBaseClass):
                     continue
                 self.createExchangeInteractionLog(
                     self.ProcessName,
-                    datetime.now(),
+                    datetime.utcnow(),
                     "create_order("
                     + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
                     + ", 'limit', 'sell', " + str(OrderQuantityInt) + "," +
@@ -253,7 +253,7 @@ class TraderBaseClass(ProcessBaseClass):
                     continue
                 self.createExchangeInteractionLog(
                     self.ProcessName,
-                    datetime.now(),
+                    datetime.utcnow(),
                     "create_order("
                     + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
                     + ", 'limit', 'sell', " + str(OrderQuantityInt) + "," +
@@ -283,7 +283,7 @@ class TraderBaseClass(ProcessBaseClass):
                         round(min(LowerLimitArr))
                     )
                 self.createOrderLog(
-                    datetime.now(),
+                    datetime.utcnow(),
                     round(min(LowerLimitArr)),
                     'open',
                     OrderSideStr,
@@ -296,7 +296,7 @@ class TraderBaseClass(ProcessBaseClass):
                     continue
                 self.createExchangeInteractionLog(
                     self.ProcessName,
-                    datetime.now(),
+                    datetime.utcnow(),
                     "create_order("
                     + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
                     + ", 'limit', 'buy', " + str(OrderQuantityInt) + "," +
@@ -308,7 +308,7 @@ class TraderBaseClass(ProcessBaseClass):
                     continue
                 self.createExchangeInteractionLog(
                     self.ProcessName,
-                    datetime.now(),
+                    datetime.utcnow(),
                     "create_order("
                     + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
                     + ", 'limit', 'buy', " + str(OrderQuantityInt) + "," +
@@ -320,7 +320,7 @@ class TraderBaseClass(ProcessBaseClass):
                     continue
                 self.createExchangeInteractionLog(
                     self.ProcessName,
-                    datetime.now(),
+                    datetime.utcnow(),
                     "create_order("
                     + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
                     + ", 'limit', 'buy', " + str(OrderQuantityInt) + "," +
@@ -360,7 +360,7 @@ class TraderBaseClass(ProcessBaseClass):
                         {'type': 'market'}
                     )
                 self.createOrderLog(
-                    datetime.now(),
+                    datetime.utcnow(),
                     self.CurrentSystemVariables['CurrentPrice'],
                     'market',
                     OrderSideStr,
@@ -374,7 +374,7 @@ class TraderBaseClass(ProcessBaseClass):
                     continue
                 self.createExchangeInteractionLog(
                     self.ProcessName,
-                    datetime.now(),
+                    datetime.utcnow(),
                     "create_order("
                     + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
                     + ", 'market'," +
@@ -387,7 +387,7 @@ class TraderBaseClass(ProcessBaseClass):
                     continue
                 self.createExchangeInteractionLog(
                     self.ProcessName,
-                    datetime.now(),
+                    datetime.utcnow(),
                     "create_order("
                     + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
                     + ", 'market'," +
@@ -400,7 +400,7 @@ class TraderBaseClass(ProcessBaseClass):
                     continue
                 self.createExchangeInteractionLog(
                     self.ProcessName,
-                    datetime.now(),
+                    datetime.utcnow(),
                     "create_order("
                     + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
                     + ", 'market'," +
@@ -425,7 +425,7 @@ class TraderBaseClass(ProcessBaseClass):
         for iterator in range(0, Constant.RETRY_LIMIT):
             try:
                 self.CurrentSystemVariables['CurrentPrice'] = self.ExchangeConnectionObj.fetch_ticker(TradingPairSymbolStr)['bid']
-                self.createPriceLogEntry(datetime.now(), self.CurrentSystemVariables['CurrentPrice'])
+                self.createPriceLogEntry(datetime.utcnow(), self.CurrentSystemVariables['CurrentPrice'])
                 break
             except Exception as ErrorMessage:
                 # Please create a log table and a log function for exchange related retrievals.
@@ -434,7 +434,7 @@ class TraderBaseClass(ProcessBaseClass):
                     continue
                 self.createExchangeInteractionLog(
                     self.ProcessName,
-                    datetime.now(),
+                    datetime.utcnow(),
                     "WebSocket get_ticket()['mid]", ErrorMessage
                 )
 
@@ -442,7 +442,7 @@ class TraderBaseClass(ProcessBaseClass):
         if self.CurrentSystemVariables['TradingState'] == 'Market Halt':
             if self.CurrentSystemVariables['CurrentAccountPositionSize'] == 0 and self.OpenOrderCountInt > 0:
                 self.cancelAllOrders()
-                self.createProcessExecutionLog(self.ProcessName, datetime.now(),
+                self.createProcessExecutionLog(self.ProcessName, datetime.utcnow(),
                                                "Process Update: Closing all orders on Market Halt trading state")
                 return False
             elif self.OpenOrderCountInt == 0 and self.CurrentSystemVariables['CurrentAccountPositionSize'] == 0:
@@ -457,18 +457,18 @@ class TraderBaseClass(ProcessBaseClass):
                 elif self.CurrentSystemVariables['CurrentAccountPositionSize'] < 0:
                     self.placeMarketOrder('buy')
 
-                self.createProcessExecutionLog(self.ProcessName, datetime.now(),
+                self.createProcessExecutionLog(self.ProcessName, datetime.utcnow(),
                                                "Process Update: Creating market orders on open position due to "
                                                + self.CurrentSystemVariables['TradingState'] + " trading state")
                 if self.OpenOrderCountInt > 0:
                     self.cancelAllOrders()
-                    self.createProcessExecutionLog(self.ProcessName, datetime.now(),
+                    self.createProcessExecutionLog(self.ProcessName, datetime.utcnow(),
                                                    "Process Update: Closing all orders due to "
                                                    + self.CurrentSystemVariables['TradingState'] + " trading state")
             return False
         elif self.CurrentSystemVariables['TradingState'] is None:
             # In case the algorithm configuration variables are not set yet, we do not execute trading functionality
-            self.createProcessExecutionLog(self.ProcessName, datetime.now(),
+            self.createProcessExecutionLog(self.ProcessName, datetime.utcnow(),
                                            "Process Update: Algorithm trading state not set")
             return False
 
@@ -481,7 +481,10 @@ class TraderBaseClass(ProcessBaseClass):
             return
         # endregion
 
-        OrderQuantityInt = format(self.getOrderQuantity(), '.6f')
+        if PayloadObj['TradeAction'] == 'close':
+            OrderQuantityInt = self.CurrentSystemVariables['CurrentAccountPositionSize']
+        else:
+            OrderQuantityInt = format(self.getOrderQuantity(), '.6f')
 
         for iterator in range(0, Constant.RETRY_LIMIT):
             try:
@@ -498,21 +501,21 @@ class TraderBaseClass(ProcessBaseClass):
                 })
 
                 self.createOrderLog(
-                    datetime.now(),
+                    datetime.strptime(PayloadObj['Time'], '%Y-%m-%dT%H:%M:%SZ'),
                     PayloadObj['Price'],
-                    'N/A',
+                    PayloadObj['TradeAction'],
                     PayloadObj['TradeDirection'],
                     OrderQuantityInt,
                     'N/A'
                 )
-                print('Limit Trade Placed')
+                # print('Limit Trade Placed')
                 break
             except ccxt.NetworkError as ErrorMessage:
                 if iterator != Constant.RETRY_LIMIT - 1:
                     continue
                 self.createExchangeInteractionLog(
                     self.ProcessName,
-                    datetime.now(),
+                    datetime.utcnow(),
                     "create_order("
                     + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
                     + ", " + PayloadObj['TradeType'] + ", " + PayloadObj['TradeDirection'] + ", "
@@ -524,7 +527,7 @@ class TraderBaseClass(ProcessBaseClass):
                     continue
                 self.createExchangeInteractionLog(
                     self.ProcessName,
-                    datetime.now(),
+                    datetime.utcnow(),
                     "create_order("
                     + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
                     + ", " + PayloadObj['TradeType'] + ", " + PayloadObj['TradeDirection'] + ", "
@@ -536,7 +539,7 @@ class TraderBaseClass(ProcessBaseClass):
                     continue
                 self.createExchangeInteractionLog(
                     self.ProcessName,
-                    datetime.now(),
+                    datetime.utcnow(),
                     "create_order("
                     + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
                     + ", " + PayloadObj['TradeType'] + ", " + PayloadObj['TradeDirection'] + ", "
@@ -550,8 +553,10 @@ class TraderBaseClass(ProcessBaseClass):
         if not self.checkTradingState():
             return
         # endregion
-
-        OrderQuantityInt = format(self.getOrderQuantity(), '.6f')
+        if PayloadObj['TradeAction'] == 'close':
+            OrderQuantityInt = self.CurrentSystemVariables['CurrentAccountPositionSize']
+        else:
+            OrderQuantityInt = format(self.getOrderQuantity(), '.6f')
 
         for iterator in range(0, Constant.RETRY_LIMIT):
             try:
@@ -565,21 +570,21 @@ class TraderBaseClass(ProcessBaseClass):
                 })
 
                 self.createOrderLog(
-                    datetime.now(),
+                    datetime.strptime(PayloadObj['Time'], '%Y-%m-%dT%H:%M:%SZ'),
                     PayloadObj['Price'],
-                    'N/A',
+                    PayloadObj['TradeAction'],
                     PayloadObj['TradeDirection'],
                     OrderQuantityInt,
                     'N/A'
                 )
-                print('Market Trade Placed')
+                # print('Market Trade Placed')
                 break
             except ccxt.NetworkError as ErrorMessage:
                 if iterator != Constant.RETRY_LIMIT-1:
                     continue
                 self.createExchangeInteractionLog(
                     self.ProcessName,
-                    datetime.now(),
+                    datetime.utcnow(),
                     "create_order("
                     + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
                     + ", " + PayloadObj['TradeType'] + ", " + PayloadObj['TradeDirection'] + ", "
@@ -591,7 +596,7 @@ class TraderBaseClass(ProcessBaseClass):
                     continue
                 self.createExchangeInteractionLog(
                     self.ProcessName,
-                    datetime.now(),
+                    datetime.utcnow(),
                     "create_order("
                     + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
                     + ", " + PayloadObj['TradeType'] + ", " + PayloadObj['TradeDirection'] + ", "
@@ -603,7 +608,7 @@ class TraderBaseClass(ProcessBaseClass):
                     continue
                 self.createExchangeInteractionLog(
                     self.ProcessName,
-                    datetime.now(),
+                    datetime.utcnow(),
                     "create_order("
                     + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
                     + ", " + PayloadObj['TradeType'] + ", " + PayloadObj['TradeDirection'] + ", "

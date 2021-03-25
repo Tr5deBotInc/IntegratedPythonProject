@@ -26,7 +26,7 @@ class IndicatorGenerationClass(IndicatorGenerationBaseClass):
         elif SelectedAlgorithmNameStr == Constant.EMA_ALGORITHM_V1:
             self.updateIndicatorsForEma21AnalyserAlgorithm()
 
-        self.IndicatorsObj['TimeStamp']['datetime'] = datetime.now()
+        self.IndicatorsObj['TimeStamp']['datetime'] = datetime.utcnow()
 
     def updateIndicatorsForBbRsiAlgorithm(self):
         self.updateBollingerBandIndicator()

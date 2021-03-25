@@ -43,17 +43,17 @@ class ManagerBaseClass(ProcessBaseClass):
         # print("execute Each Time Interval")
         StartingTimeInt = time.time()
         while True:  # change this to work based on system state
-            # self.createProcessExecutionLog(ProcessObj.ProcessName, datetime.now(), "Starting Process Execution")
+            # self.createProcessExecutionLog(ProcessObj.ProcessName, datetime.utcnow(), "Starting Process Execution")
 
             for iterator in range(0, Constant.RETRY_LIMIT):
                 try:
                     ProcessObj.initiateExecution()
-                    # self.createProcessExecutionLog(ProcessObj.ProcessName, datetime.now(), "Process Executed Successfully")
+                    # self.createProcessExecutionLog(ProcessObj.ProcessName, datetime.utcnow(), "Process Executed Successfully")
                     break
                 except Exception as ErrorMessage:
                     if iterator != Constant.RETRY_LIMIT-1:
                         continue
-                    self.createProcessExecutionLog(ProcessObj.ProcessName, datetime.now(),
+                    self.createProcessExecutionLog(ProcessObj.ProcessName, datetime.utcnow(),
                                                    "Process Failed: " + str(ErrorMessage) + "\n" + traceback.format_exc())
 
             if time.time() - StartingTimeInt < IntervalInt:
@@ -64,7 +64,7 @@ class ManagerBaseClass(ProcessBaseClass):
             else:
                 self.createProcessExecutionLog(
                     ProcessObj.ProcessName,
-                    datetime.now(),
+                    datetime.utcnow(),
                     "Process took " + str(time.time() - StartingTimeInt) + " seconds to execute")
                 StartingTimeInt = time.time()
 
@@ -126,6 +126,10 @@ class ManagerBaseClass(ProcessBaseClass):
         WebhookObj = ResultObj[0]
         AlgorithmConfigurationObjId = WebhookObj[Constant.WEBHOOK_SETUP_ALGORITHM_CONFIGURATION_INDEX]
         self.AlgorithmConfigurationObj = self.getAlgorithmConfigurationObj(None, AlgorithmConfigurationObjId)
+
+        self.SystemVariablesObj['AlgorithmId'] = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_ALGORITHM_NAME_INDEX]
+        self.SystemVariablesObj['TradingState'] = self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_STATE_INDEX]
+
         self.setExchangeConnection()
         if self.AlgorithmConfigurationObj is None:
             return False
@@ -208,7 +212,7 @@ class ManagerBaseClass(ProcessBaseClass):
                 # We will only log errors in this table
                 self.createExchangeInteractionLog(
                     self.ProcessName,
-                    datetime.now(),
+                    datetime.utcnow(),
                     " self.ExchangeConnectionObj.fetch_ticker(" + TradingPairSymbolStr + ")['bid']", ErrorMessage
                 )
 
@@ -226,7 +230,7 @@ class ManagerBaseClass(ProcessBaseClass):
                     continue
                 self.createExchangeInteractionLog(
                     self.ProcessName,
-                    datetime.now(),
+                    datetime.utcnow(),
                     "fetch_balance()",
                     "NetworkError: " + str(ErrorMessage)
                 )
@@ -235,7 +239,7 @@ class ManagerBaseClass(ProcessBaseClass):
                     continue
                 self.createExchangeInteractionLog(
                     self.ProcessName,
-                    datetime.now(),
+                    datetime.utcnow(),
                     "fetch_balance()",
                     "ExchangeError: " + str(ErrorMessage)
                 )
@@ -244,7 +248,7 @@ class ManagerBaseClass(ProcessBaseClass):
                     continue
                 self.createExchangeInteractionLog(
                     self.ProcessName,
-                    datetime.now(),
+                    datetime.utcnow(),
                     "fetch_balance()",
                     "OtherError: " + str(ErrorMessage)
                 )
@@ -287,7 +291,7 @@ class ManagerBaseClass(ProcessBaseClass):
                     continue
                 self.createExchangeInteractionLog(
                     self.ProcessName,
-                    datetime.now(),
+                    datetime.utcnow(),
                     "private_get_position()",
                     "NetworkError: " + str(ErrorMessage)
                 )
@@ -296,7 +300,7 @@ class ManagerBaseClass(ProcessBaseClass):
                     continue
                 self.createExchangeInteractionLog(
                     self.ProcessName,
-                    datetime.now(),
+                    datetime.utcnow(),
                     "private_get_position()",
                     "ExchangeError: " + str(ErrorMessage)
                 )
@@ -305,7 +309,7 @@ class ManagerBaseClass(ProcessBaseClass):
                     continue
                 self.createExchangeInteractionLog(
                     self.ProcessName,
-                    datetime.now(),
+                    datetime.utcnow(),
                     "private_get_position()",
                     "OtherError: " + str(ErrorMessage)
                 )
