@@ -175,7 +175,7 @@ class ProcessBaseClass:
                     self.ProcessName + " in " + FunctionNameStr + " failed to retrieve information from MySQL database {}".format(error))
                 print(QueryStr)
                 print(QueryData)
-                print(datetime.now())
+                print(datetime.utcnow())
     # endregion
 
     # region Base function used to insert information into the database
@@ -204,7 +204,7 @@ class ProcessBaseClass:
                 print(self.ProcessName + " in " + FunctionNameStr + " failed to insert into MySQL table {}".format(error))
                 print(QueryStr)
                 print(QueryData)
-                print(datetime.now())
+                print(datetime.utcnow())
     # endregion
 
     # region Functions used to log process successes and failures as system executes
@@ -332,7 +332,7 @@ class ProcessBaseClass:
                         continue
                     self.createExchangeInteractionLog(
                         self.ProcessName,
-                        datetime.now(),
+                        datetime.utcnow(),
                         "fetch_ohlcv("
                         + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
                         + "," + "1m,since=("
@@ -362,7 +362,7 @@ class ProcessBaseClass:
                         continue
                     self.createExchangeInteractionLog(
                         self.ProcessName,
-                        datetime.now(),
+                        datetime.utcnow(),
                         "sapi_get_margin_mytrades(symbol="
                         + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
                         + "," + "since=("

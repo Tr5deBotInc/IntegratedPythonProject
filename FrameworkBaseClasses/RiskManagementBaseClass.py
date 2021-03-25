@@ -42,9 +42,9 @@ class RiskManagementBaseClass(ProcessBaseClass):
         if self.ExchangeConnectionDetails['ExchangeName'] == Constant.BITMEX_EXCHANGE_ID:
             CurrentDateTimeObj = datetime.now(timezone.utc).replace(tzinfo=None)
             FundingTimeObjArr = [
-                datetime.now().replace(hour=Constant.FIRST_FUNDING_HOUR, minute=0),
-                datetime.now().replace(hour=Constant.SECOND_FUNDING_HOUR, minute=0),
-                datetime.now().replace(hour=Constant.THIRD_FUNDING_HOUR, minute=0),
+                datetime.utcnow().replace(hour=Constant.FIRST_FUNDING_HOUR, minute=0),
+                datetime.utcnow().replace(hour=Constant.SECOND_FUNDING_HOUR, minute=0),
+                datetime.utcnow().replace(hour=Constant.THIRD_FUNDING_HOUR, minute=0),
             ]
 
             isFundingTimeBool = False

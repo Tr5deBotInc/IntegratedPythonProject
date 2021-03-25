@@ -35,7 +35,7 @@ class IndicatorGenerationBaseClass(ProcessBaseClass):
                         continue
                     self.createExchangeInteractionLog(
                         self.ProcessName,
-                        datetime.now(),
+                        datetime.utcnow(),
                         "fetch_ohlcv("
                         + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
                         + "," + "1m,since="
@@ -47,7 +47,7 @@ class IndicatorGenerationBaseClass(ProcessBaseClass):
                         continue
                     self.createExchangeInteractionLog(
                         self.ProcessName,
-                        datetime.now(),
+                        datetime.utcnow(),
                         "fetch_ohlcv("
                         + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
                         + "," + "1m,since="
@@ -59,7 +59,7 @@ class IndicatorGenerationBaseClass(ProcessBaseClass):
                         continue
                     self.createExchangeInteractionLog(
                         self.ProcessName,
-                        datetime.now(),
+                        datetime.utcnow(),
                         "fetch_ohlcv("
                         + self.AlgorithmConfigurationObj[Constant.ALGORITHM_CONFIGURATION_TRADING_PAIR_SYMBOL_INDEX]
                         + "," + "1m,since="
@@ -117,9 +117,9 @@ class IndicatorGenerationBaseClass(ProcessBaseClass):
                 ProjectFunctions.checkIfNumber(BollingerBandObj['lower']):
             self.IndicatorsObj['BB']['upper'] = BollingerBandObj['upper']
             self.IndicatorsObj['BB']['lower'] = BollingerBandObj['lower']
-            self.createIndicatorUpdateLog(self.ProcessName,  datetime.now(), 'Bollinger Band', BollingerBandObj, 'True')
+            self.createIndicatorUpdateLog(self.ProcessName,  datetime.utcnow(), 'Bollinger Band', BollingerBandObj, 'True')
         else:
-            self.createIndicatorUpdateLog(self.ProcessName,  datetime.now(), 'Bollinger Band', {}, 'False')
+            self.createIndicatorUpdateLog(self.ProcessName,  datetime.utcnow(), 'Bollinger Band', {}, 'False')
 
     def updateRsiBandIndicator(self):
         RsiBandObj = ProjectFunctions.getRsiBands(self.CandleArr['FiveMinuteCandles'], self.AlgorithmConfigurationObj)
@@ -128,18 +128,18 @@ class IndicatorGenerationBaseClass(ProcessBaseClass):
                 ProjectFunctions.checkIfNumber(RsiBandObj['lower']):
             self.IndicatorsObj['RSI']['upper'] = RsiBandObj['upper']
             self.IndicatorsObj['RSI']['lower'] = RsiBandObj['lower']
-            self.createIndicatorUpdateLog(self.ProcessName, datetime.now(), 'RSI Band', RsiBandObj, 'True')
+            self.createIndicatorUpdateLog(self.ProcessName, datetime.utcnow(), 'RSI Band', RsiBandObj, 'True')
         else:
-            self.createIndicatorUpdateLog(self.ProcessName, datetime.now(), 'RSI Band', {}, 'False')
+            self.createIndicatorUpdateLog(self.ProcessName, datetime.utcnow(), 'RSI Band', {}, 'False')
 
     def updateSmaIndicator(self):
         if ProjectFunctions.checkIfNumber(self.IndicatorsObj['SMA']['value']):
             SimpleMovingAverageObj = ProjectFunctions.getSimpleMovingAverage(self.CandleArr['FiveMinuteCandles'])
             self.IndicatorsObj['SMA']['value'] = SimpleMovingAverageObj['value']
-            self.createIndicatorUpdateLog(self.ProcessName, datetime.now(), 'SMA',
+            self.createIndicatorUpdateLog(self.ProcessName, datetime.utcnow(), 'SMA',
                                           {'SMA': self.IndicatorsObj['SMA']}, 'True')
         else:
-            self.createIndicatorUpdateLog(self.ProcessName, datetime.now(), 'SMA',
+            self.createIndicatorUpdateLog(self.ProcessName, datetime.utcnow(), 'SMA',
                                           {}, 'False')
 
     def updateEmaIndicator(self):
@@ -153,10 +153,10 @@ class IndicatorGenerationBaseClass(ProcessBaseClass):
         UpdatedEmaObj = ProjectFunctions.getExponentialMovingAverage(self.CandleArr['FiveMinuteCandles'], FrameCountInt, PreviousExponentialMovingAverageFloat, EmaSmoothingFactorFloat)
         if ProjectFunctions.checkIfNumber(UpdatedEmaObj['value']):
             self.IndicatorsObj['EMA']['value'] = UpdatedEmaObj['value']
-            self.createIndicatorUpdateLog(self.ProcessName, datetime.now(), 'EMA',
+            self.createIndicatorUpdateLog(self.ProcessName, datetime.utcnow(), 'EMA',
                                           {'EMA': self.IndicatorsObj['EMA']}, 'True')
         else:
-            self.createIndicatorUpdateLog(self.ProcessName, datetime.now(), 'EMA',
+            self.createIndicatorUpdateLog(self.ProcessName, datetime.utcnow(), 'EMA',
                                           {}, 'False')
 
     def updateEmaRetestIndicator(self):
@@ -190,10 +190,10 @@ class IndicatorGenerationBaseClass(ProcessBaseClass):
         self.IndicatorsObj['EMA_RETEST']['placement'] = CurrentMarketPlacementStr
 
         if ProjectFunctions.checkIfNumber(self.IndicatorsObj['EMA_RETEST']['retest_candle_count']):
-            self.createIndicatorUpdateLog(self.ProcessName, datetime.now(), 'EMA_RETEST',
+            self.createIndicatorUpdateLog(self.ProcessName, datetime.utcnow(), 'EMA_RETEST',
                                           {'EMA_RETEST': self.IndicatorsObj['EMA_RETEST']}, 'True')
         else:
-            self.createIndicatorUpdateLog(self.ProcessName, datetime.now(), 'EMA_RETEST',
+            self.createIndicatorUpdateLog(self.ProcessName, datetime.utcnow(), 'EMA_RETEST',
                                           {}, 'False')
 
     def updateClosingOrderCountIndicator(self):
@@ -207,6 +207,6 @@ class IndicatorGenerationBaseClass(ProcessBaseClass):
             self.IndicatorsObj['COC']['OrderCount'] = 0
             self.IndicatorsObj['COC']['RetestCount'] = self.IndicatorsObj['EMA_RETEST']['retest_candle_count']
 
-        self.createIndicatorUpdateLog(self.ProcessName, datetime.now(), 'COC',
+        self.createIndicatorUpdateLog(self.ProcessName, datetime.utcnow(), 'COC',
                                       self.IndicatorsObj['COC'], 'True')
     # endregion

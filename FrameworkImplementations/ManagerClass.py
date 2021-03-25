@@ -182,29 +182,29 @@ class ManagerClass(ManagerBaseClass):
             if 'upper' in BollingerBandObj and 'lower' in BollingerBandObj and\
                     ProjectFunctions.checkIfNumber(BollingerBandObj['upper']) and\
                     ProjectFunctions.checkIfNumber(BollingerBandObj['lower']):
-                self.createIndicatorUpdateLog(self.ProcessName,  datetime.now(), 'Bollinger Band', BollingerBandObj, 'True')
+                self.createIndicatorUpdateLog(self.ProcessName,  datetime.utcnow(), 'Bollinger Band', BollingerBandObj, 'True')
                 self.BollingerBandObj = BollingerBandObj
             else:
-                self.createIndicatorUpdateLog(self.ProcessName, datetime.now(), 'Bollinger Band', {}, 'False')
+                self.createIndicatorUpdateLog(self.ProcessName, datetime.utcnow(), 'Bollinger Band', {}, 'False')
 
         if RsiUsedBool:
             RsiBandObj = ProjectFunctions.getRsiBands(self.FiveMinCandleArr, self.AlgorithmConfigurationObj)
             if 'upper' in RsiBandObj and 'lower' in RsiBandObj and\
                     ProjectFunctions.checkIfNumber(RsiBandObj['upper']) and\
                     ProjectFunctions.checkIfNumber(RsiBandObj['lower']):
-                self.createIndicatorUpdateLog(self.ProcessName, datetime.now(), 'RSI Band', RsiBandObj, 'True')
+                self.createIndicatorUpdateLog(self.ProcessName, datetime.utcnow(), 'RSI Band', RsiBandObj, 'True')
                 self.RsiBandObj = RsiBandObj
             else:
-                self.createIndicatorUpdateLog(self.ProcessName, datetime.now(), 'RSI Band', {}, 'False')
+                self.createIndicatorUpdateLog(self.ProcessName, datetime.utcnow(), 'RSI Band', {}, 'False')
 
         self.CloseOrderCountObj = {
             'OrderCount': 0,
             'RetestCount': 0
         }
-        self.createIndicatorUpdateLog(self.ProcessName, datetime.now(), 'COC', self.CloseOrderCountObj, 'True')
+        self.createIndicatorUpdateLog(self.ProcessName, datetime.utcnow(), 'COC', self.CloseOrderCountObj, 'True')
 
         self.CurrentSimpleMovingAverageFloat = ProjectFunctions.getSimpleMovingAverage(self.FiveMinCandleArr)
-        self.IndicatorTimeStampObj = {'datetime': datetime.now()}
+        self.IndicatorTimeStampObj = {'datetime': datetime.utcnow()}
 
         if ProjectFunctions.checkIfNumber(self.CurrentSimpleMovingAverageFloat['value']):
             self.createIndicatorUpdateLog(self.ProcessName, self.IndicatorTimeStampObj['datetime'], 'SMA',
@@ -242,7 +242,7 @@ class ManagerClass(ManagerBaseClass):
         self.createAlgorithmSnapshot(
             self.SystemVariablesObj['CurrentPortfolioValue'],
             self.SystemVariablesObj['CurrentAccountPositionSize'],
-            datetime.now(),
+            datetime.utcnow(),
         )
 
     def initiateStartingTimer(self):
@@ -257,7 +257,7 @@ class ManagerClass(ManagerBaseClass):
         if WhenToStartInt is None:
             return
 
-        now = datetime.now()
+        now = datetime.utcnow()
         next_run = now.replace(minute=int(now.minute / WhenToStartInt) * WhenToStartInt, second=0, microsecond=0) + timedelta(minutes=WhenToStartInt)
         sleep_time = (next_run - now).total_seconds()
         time.sleep(sleep_time)
@@ -293,11 +293,11 @@ class ManagerClass(ManagerBaseClass):
     def testTradeTiming(self, PayloadObj, TraderObj):
         if PayloadObj['TradeAction'] == 'close' and self.SystemVariablesObj['CurrentAccountPositionSize'] == 0:
             print('Received order request in incorrect order! No action performed.')
-            self.createProcessExecutionLog(self.ProcessName, datetime.now(), 'Process Failed: received order request in incorrect order! No action performed.')
+            self.createProcessExecutionLog(self.ProcessName, datetime.utcnow(), 'Process Failed: received order request in incorrect order! No action performed.')
             return False
         elif PayloadObj['TradeAction'] == 'open' and self.SystemVariablesObj['CurrentAccountPositionSize'] != 0:
             print('Received order request in incorrect order! Closed position.')
-            self.createProcessExecutionLog(self.ProcessName, datetime.now(), 'Process Failed: received order request in incorrect order! Closed position.')
+            self.createProcessExecutionLog(self.ProcessName, datetime.utcnow(), 'Process Failed: received order request in incorrect order! Closed position.')
             if self.SystemVariablesObj['CurrentAccountPositionSize'] > 0:
                 TraderObj.placeMarketOrder('sell')
             else:
@@ -310,14 +310,16 @@ class ManagerClass(ManagerBaseClass):
             return
 
         self.updateSystemVariablesForWebhook()
-        print('System Variables Updated')
+        # print('System Variables Updated')
         TraderObj = self.initializeTraderObjForWebhook()
 
         if not self.testTradeTiming(PayloadObj, TraderObj):
             return
 
         if PayloadObj['TradeType'] == 'MARKET':
+            # print('If: ' + PayloadObj['TradeType'])
             TraderObj.genericPlaceMarketTrade(PayloadObj)
         else:
+            # print('Else' + PayloadObj['TradeType'])
             TraderObj.genericPlaceLimitTrade(PayloadObj)
 
