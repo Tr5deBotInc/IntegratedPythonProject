@@ -483,11 +483,6 @@ class TraderBaseClass(ProcessBaseClass):
 
         OrderQuantityInt = format(self.getOrderQuantity(), '.6f')
 
-        if PayloadObj['Borrow']:
-            SideEffectStr = 'MARGIN_BUY'
-        else:
-            SideEffectStr = 'NO_SIDE_EFFECT'
-
         for iterator in range(0, Constant.RETRY_LIMIT):
             try:
                 self.ExchangeConnectionObj.sapi_post_margin_order({
@@ -497,7 +492,7 @@ class TraderBaseClass(ProcessBaseClass):
                     'type': PayloadObj['TradeType'],
                     'quantity': OrderQuantityInt,
                     'price': PayloadObj['Price'],
-                    'sideEffectType': SideEffectStr,
+                    'sideEffectType': PayloadObj['SideEffect'],
                     'timeInForce': 'GTC',
                     'timestamp': str(round(time.time() * 1000))
                 })
@@ -558,11 +553,6 @@ class TraderBaseClass(ProcessBaseClass):
 
         OrderQuantityInt = format(self.getOrderQuantity(), '.6f')
 
-        if PayloadObj['Borrow']:
-            SideEffectStr = 'MARGIN_BUY'
-        else:
-            SideEffectStr = 'NO_SIDE_EFFECT'
-
         for iterator in range(0, Constant.RETRY_LIMIT):
             try:
                 self.ExchangeConnectionObj.sapi_post_margin_order({
@@ -570,7 +560,7 @@ class TraderBaseClass(ProcessBaseClass):
                     'side': PayloadObj['TradeDirection'],
                     'type': PayloadObj['TradeType'],
                     'quantity': OrderQuantityInt,
-                    'sideEffectType': SideEffectStr,
+                    'sideEffectType': PayloadObj['SideEffect'],
                     'timestamp': str(round(time.time() * 1000))
                 })
 
